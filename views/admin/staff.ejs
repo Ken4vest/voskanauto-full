@@ -1,0 +1,71 @@
+<%- include('../partials/layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-user-tie" style="color:var(--primary);margin-right:8px"></i>Персонал</h2>
+<button class="btn btn-primary" onclick="openModal('addStaff')"><i class="fas fa-plus"></i> Новый сотрудник</button>
+</div>
+
+<div class="card">
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>ID</th><th>ФИО</th><th>Роль</th><th>Email</th><th>Телефон</th><th>Статус</th></tr></thead>
+<tbody>
+<% staff.forEach(s => { %>
+<tr>
+<td><strong>S-<%= String(s.id).padStart(3,'0') %></strong></td>
+<td><div class="client-name"><%= s.full_name %></div></td>
+<td><%= s.role === 'admin' ? 'Администратор' : s.role === 'mechanic' ? 'Механик' : 'Приёмщик' %></td>
+<td><%= s.email %></td>
+<td><%= s.phone || '—' %></td>
+<td><span class="status-badge status-<%= s.is_active ? 'confirmed' : 'cancel' %>"><%= s.is_active ? 'Активен' : 'Заблокирован' %></span></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="modal-overlay" id="addStaffModal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header"><div class="modal-title">Новый сотрудник</div><button class="modal-close" onclick="closeModal('addStaffModal')"><i class="fas fa-times"></i></button></div>
+<div class="modal-body">
+<form id="addStaffForm" method="POST" action="/admin/staff">
+<div class="form-row">
+<div class="form-group"><label class="form-label">ФИО *</label><input type="text" name="full_name" class="form-input" required></div>
+<div class="form-group"><label class="form-label">Email *</label><input type="email" name="email" class="form-input" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Пароль *</label><input type="password" name="password" class="form-input" required minlength="6"></div>
+<div class="form-group"><label class="form-label">Телефон</label><input type="text" name="phone" class="form-input"></div>
+</div>
+<div class="form-group"><label class="form-label">Роль *</label><select name="role" class="form-select" required>
+<option value="mechanic">Механик</option>
+<option value="receptionist">Приёмщик</option>
+<option value="admin">Администратор</option>
+</select></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('addStaffModal')">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('addStaffForm').submit()"><i class="fas fa-save"></i> Сохранить</button>
+</div>
+</div>
+</div>
+
+<script>
+function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

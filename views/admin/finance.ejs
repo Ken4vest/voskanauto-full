@@ -1,0 +1,38 @@
+<%- include('../partials/layout') %>
+
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-header"><div class="stat-label">Общая выручка</div><div class="stat-icon blue"><i class="fas fa-ruble-sign"></i></div></div><div class="stat-value">₽<%= totalRevenue.total.toLocaleString() %></div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-label">Выручка сегодня</div><div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div></div><div class="stat-value">₽<%= todayRevenue.total.toLocaleString() %></div></div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title">Кассовые операции</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Дата</th><th>Клиент</th><th>Заказ</th><th>Сумма</th><th>Способ</th></tr></thead>
+<tbody>
+<% payments.forEach(p => { %>
+<tr>
+<td><%= new Date(p.created_at).toLocaleString('ru-RU') %></td>
+<td><%= p.client_name %></td>
+<td><%= p.order_number || '—' %></td>
+<td><span class="amount" style="color:var(--success)">+₽<%= p.amount.toLocaleString() %></span></td>
+<td><%= p.payment_method === 'cash' ? 'Наличные' : p.payment_method === 'online' ? 'Онлайн' : 'QR' %></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

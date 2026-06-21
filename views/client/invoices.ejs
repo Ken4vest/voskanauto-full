@@ -1,0 +1,44 @@
+<%- include('../partials/client_layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-file-invoice" style="color:var(--primary);margin-right:8px"></i>Мои счета</h2>
+</div>
+
+<div class="card">
+<div class="card-body" style="padding:0">
+<% if (invoices.length > 0) { %>
+<table class="data-table">
+<thead><tr><th>№ счёта</th><th>Дата</th><th>Описание</th><th>Сумма</th><th>Статус</th><th>Срок</th></tr></thead>
+<tbody>
+<% invoices.forEach(inv => { %>
+<tr>
+<td><strong><%= inv.invoice_number %></strong></td>
+<td><%= new Date(inv.created_at).toLocaleDateString('ru-RU') %></td>
+<td><%= inv.description || '—' %></td>
+<td><span class="amount" style="color:<%= inv.status==='pending'?'var(--danger)':'var(--success)' %>">₽<%= inv.amount.toLocaleString() %></span></td>
+<td>
+<% if (inv.status === 'pending') { %><span class="status-badge status-pending">Не оплачен</span>
+<% } else { %><span class="status-badge status-paid">Оплачен</span><% } %>
+</td>
+<td><%= inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—' %></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Нет счетов</h3><p>Счета будут появляться после оформления заказов</p></div>
+<% } %>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

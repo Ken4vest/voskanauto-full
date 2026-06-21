@@ -1,0 +1,83 @@
+<%- include('../partials/client_layout') %>
+
+<div class="card" style="margin-bottom:20px">
+<div class="card-header">
+<div class="card-title">Заказ-наряд #<%= order.order_number %></div>
+<div class="card-actions">
+<% if (order.status === 'ready') { %>
+<span class="status-badge status-ready">Готов к выдаче</span>
+<% } else { %>
+<span class="status-badge status-<%= order.status === 'created' ? 'created' : order.status === 'in_progress' ? 'work' : order.status === 'waiting_parts' ? 'wait' : order.status === 'completed' ? 'done' : 'cancel' %>">
+<%= order.status === 'created' ? 'Создан' : order.status === 'in_progress' ? 'В работе' : order.status === 'waiting_parts' ? 'Ожидает запчастей' : order.status === 'completed' ? 'Выдан' : 'Отменён' %>
+</span>
+<% } %>
+</div>
+</div>
+<div class="card-body">
+<div class="form-row">
+<div class="form-group"><label class="form-label">Дата создания</label><div class="form-input" style="background:var(--gray-light)"><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></div></div>
+<div class="form-group"><label class="form-label">Автомобиль</label><div class="form-input" style="background:var(--gray-light)"><%= order.brand ? order.brand + ' ' + order.model + ' (' + order.license_plate + ')' : '—' %></div></div>
+</div>
+<div class="form-group"><label class="form-label">Описание работ</label><div class="form-textarea" style="background:var(--gray-light);min-height:60px"><%= order.description || '—' %></div></div>
+</div>
+</div>
+
+<div class="cards-grid">
+<div class="card">
+<div class="card-header"><div class="card-title">Работы</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Услуга</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
+<tbody>
+<% if (order.services && order.services.length > 0) { %>
+<% order.services.forEach(s => { %>
+<tr><td><%= s.service_name %></td><td><%= s.quantity %></td><td>₽<%= s.price.toLocaleString() %></td><td><span class="amount">₽<%= s.total.toLocaleString() %></span></td></tr>
+<% }) %>
+<% } else { %>
+<tr><td colspan="4" style="text-align:center;color:var(--gray)">Работы не добавлены</td></tr>
+<% } %>
+</tbody>
+</table>
+</div>
+</div>
+<div class="card">
+<div class="card-header"><div class="card-title">Запчасти</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Наименование</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
+<tbody>
+<% if (order.parts && order.parts.length > 0) { %>
+<% order.parts.forEach(p => { %>
+<tr><td><%= p.part_name %></td><td><%= p.quantity %></td><td>₽<%= p.price.toLocaleString() %></td><td><span class="amount">₽<%= p.total.toLocaleString() %></span></td></tr>
+<% }) %>
+<% } else { %>
+<tr><td colspan="4" style="text-align:center;color:var(--gray)">Запчасти не добавлены</td></tr>
+<% } %>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-header"><div class="card-title"><i class="fas fa-calculator" style="color:var(--primary);margin-right:8px"></i>Итого</div></div>
+<div class="card-body">
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость работ:</span><span class="amount">₽<%= order.total_labor_cost.toLocaleString() %></span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость запчастей:</span><span class="amount">₽<%= order.total_parts_cost.toLocaleString() %></span></div>
+<div style="display:flex;justify-content:space-between;padding:16px 0;font-size:20px;font-weight:700"><span>ИТОГО:</span><span style="color:var(--primary)">₽<%= order.total_amount.toLocaleString() %></span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0"><span>Оплачено:</span><span class="amount" style="color:var(--success)">₽<%= order.paid_amount.toLocaleString() %></span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0"><span>Остаток:</span><span class="amount" style="color:var(--danger)">₽<%= (order.total_amount - order.paid_amount).toLocaleString() %></span></div>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

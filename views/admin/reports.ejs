@@ -1,0 +1,80 @@
+<%- include('../partials/layout') %>
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab(this,'report-revenue')">Выручка</div>
+<div class="tab" onclick="switchTab(this,'report-popular')">Популярные услуги</div>
+<div class="tab" onclick="switchTab(this,'report-mechanics')">Мастера</div>
+</div>
+
+<div id="report-revenue" class="report-tab active">
+<div class="card">
+<div class="card-header"><div class="card-title">Выручка по дням (30 дней)</div></div>
+<div class="card-body">
+<% if (revenueByDay.length > 0) { %>
+<div class="chart-bar">
+<% revenueByDay.forEach((day, i) => { %>
+<div class="chart-bar-item" style="height:<%= Math.min(100, (day.total / 100000) * 100) %>%">
+<span class="chart-bar-value">₽<%= (day.total/1000).toFixed(0) %>K</span>
+<span class="chart-bar-label"><%= new Date(day.date).getDate() %></span>
+</div>
+<% }) %>
+</div>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-chart-bar"></i><h3>Нет данных</h3></div>
+<% } %>
+</div>
+</div>
+</div>
+
+<div id="report-popular" class="report-tab" style="display:none">
+<div class="card">
+<div class="card-header"><div class="card-title">Популярные услуги</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Услуга</th><th>Кол-во</th><th>Выручка</th></tr></thead>
+<tbody>
+<% popularServices.forEach(s => { %>
+<tr><td><%= s.name %></td><td><%= s.count %></td><td><span class="amount">₽<%= s.revenue.toLocaleString() %></span></td></tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="report-mechanics" class="report-tab" style="display:none">
+<div class="card">
+<div class="card-header"><div class="card-title">Эффективность мастеров</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Мастер</th><th>Заказов</th><th>Выручка</th></tr></thead>
+<tbody>
+<% mechanicStats.forEach(m => { %>
+<tr><td><%= m.full_name %></td><td><%= m.orders_count %></td><td><span class="amount">₽<%= m.total_revenue.toLocaleString() %></span></td></tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+function switchTab(tabEl, tabId){
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.querySelectorAll('.report-tab').forEach(t=>t.style.display='none');
+  document.getElementById(tabId).style.display='block';
+}
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<%- include('../partials/layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-bell" style="color:var(--primary);margin-right:8px"></i>Уведомления</h2>
+</div>
+
+<div class="card">
+<div class="card-body">
+<% if (notifications.length > 0) { %>
+<div class="activity-list">
+<% notifications.forEach(notif => { %>
+<div class="activity-item">
+<div class="activity-icon" style="background:<%= notif.type==='order'?'#dbeafe':notif.type==='invoice'?'#fef3c7':'#f3e8ff' %>;color:<%= notif.type==='order'?'#1e40af':notif.type==='invoice'?'#92400e':'#7c3aed' %>">
+<i class="fas fa-<%= notif.type==='order'?'clipboard-list':notif.type==='invoice'?'file-invoice':'bell' %>"></i>
+</div>
+<div class="activity-content">
+<div class="activity-text"><strong><%= notif.title %></strong></div>
+<div class="activity-text"><%= notif.message %></div>
+<div class="activity-time"><%= new Date(notif.created_at).toLocaleString('ru-RU') %></div>
+</div>
+</div>
+<% }) %>
+</div>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-bell"></i><h3>Нет уведомлений</h3></div>
+<% } %>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

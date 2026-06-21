@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — ВосканАвто</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--secondary:#f59e0b;--success:#10b981;--danger:#ef4444;--dark:#1e293b;--gray:#64748b;--gray-light:#f1f5f9;--gray-border:#e2e8f0;--white:#fff;--radius:12px;--radius-sm:8px;--shadow:0 10px 40px rgba(0,0,0,0.1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-container{width:100%;max-width:420px;padding:20px}
+.login-card{background:var(--white);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow)}
+.logo{text-align:center;margin-bottom:32px}
+.logo-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:16px;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;margin:0 auto 16px}
+.logo h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{font-size:13px;color:var(--gray);margin-top:4px}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--dark)}
+.form-input{width:100%;padding:12px 16px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;outline:none;transition:all .2s}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.input-icon{position:relative}
+.input-icon i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:14px}
+.input-icon .form-input{padding-left:42px}
+.btn{width:100%;padding:12px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-outline{background:transparent;border:1px solid var(--gray-border);color:var(--dark);margin-top:12px}
+.btn-outline:hover{background:var(--gray-light)}
+.divider{display:flex;align-items:center;margin:24px 0;color:var(--gray);font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--gray-border)}
+.divider span{padding:0 16px}
+.alert{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px}
+.alert-danger{background:#fee2e2;color:#991b1b}
+.role-selector{display:flex;gap:8px;margin-bottom:20px}
+.role-btn{flex:1;padding:10px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);background:var(--white);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.role-btn:hover{border-color:var(--primary)}
+.role-btn.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+@media(max-width:480px){.login-card{padding:24px}}
+</style>
+</head>
+<body>
+<div class="login-container">
+<div class="login-card">
+<div class="logo">
+<div class="logo-icon"><i class="fas fa-car"></i></div>
+<h1>ВосканАвто</h1>
+<p>АИС Автосервис</p>
+</div>
+<% if (typeof error !== 'undefined') { %>
+<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+<% } %>
+<form action="/login" method="POST">
+<div class="form-group">
+<label class="form-label">Email</label>
+<div class="input-icon">
+<i class="fas fa-envelope"></i>
+<input type="email" name="email" class="form-input" placeholder="your@email.com" required>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Пароль</label>
+<div class="input-icon">
+<i class="fas fa-lock"></i>
+<input type="password" name="password" class="form-input" placeholder="••••••••" required>
+</div>
+</div>
+<button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</button>
+</form>
+<div class="divider"><span>или</span></div>
+<a href="/register" class="btn btn-outline"><i class="fas fa-user-plus"></i> Зарегистрироваться как клиент</a>
+<div style="margin-top:20px;padding:16px;background:var(--gray-light);border-radius:var(--radius-sm);font-size:12px;color:var(--gray)">
+<strong>Демо-доступ:</strong><br>
+Админ: <code>admin@voskanauto.ru</code> / <code>admin123</code><br>
+Механик: <code>semenov@voskanauto.ru</code> / <code>mechanic123</code>
+</div>
+</div>
+</div>
+</body>
+</html>

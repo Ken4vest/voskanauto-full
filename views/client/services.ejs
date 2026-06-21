@@ -1,0 +1,101 @@
+<%- include('../partials/client_layout') %>
+
+<div class="filters-row">
+  <input type="text" class="filter-input" placeholder="Поиск по услуге..." onkeyup="filterServices(this.value)">
+  <select class="filter-input" onchange="filterByCategory(this.value)">
+    <option value="all">Все категории</option>
+    <option value="ТО">ТО</option>
+    <option value="Тормозная система">Тормозная система</option>
+    <option value="Ходовая часть">Ходовая часть</option>
+    <option value="Двигатель">Двигатель</option>
+    <option value="Электрика">Электрика</option>
+    <option value="Диагностика">Диагностика</option>
+  </select>
+  <button class="btn btn-outline" onclick="location.href='/client/cart'">
+    <i class="fas fa-shopping-cart"></i> 
+    Корзина (₽<%= (cartTotal && cartTotal.total) ? cartTotal.total.toLocaleString() : '0' %>)
+  </button>
+</div>
+
+<div class="service-grid" id="servicesGrid">
+  <% services.forEach(function(service) { %>
+  <div class="service-card" data-category="<%= service.category %>">
+    <div class="service-card-header">
+      <div>
+        <div class="service-card-title"><%= service.name %></div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px"><%= service.category %></div>
+      </div>
+      <div class="service-card-price">₽<%= service.price.toLocaleString() %></div>
+    </div>
+    <div class="service-card-desc">
+      Код: <%= service.code %> | Нормо-час: <%= service.labor_hours %> ч.<br>
+      Совместимость: <%= service.compatible_brands || 'Все марки' %>
+    </div>
+    <div class="service-card-footer">
+      <div class="service-card-time"><i class="fas fa-clock"></i> ~<%= service.labor_hours %> часов</div>
+      <button class="btn btn-primary btn-sm" 
+        data-id="<%= service.id %>"
+        data-name="<%= service.name %>"
+        data-price="<%= service.price %>">
+        <i class="fas fa-plus"></i> В корзину
+      </button>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<script>
+document.querySelectorAll('.service-card-footer .btn-primary').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const id = parseInt(this.dataset.id);
+    const name = this.dataset.name;
+    const price = parseFloat(this.dataset.price);
+    addToCart(id, name, price);
+  });
+});
+
+function addToCart(id, name, price){
+  fetch('/client/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ service_id: id, quantity: 1, price: price })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if(data.success){
+      showToast('success', 'Услуга "' + name + '" добавлена в корзину');
+      setTimeout(function() { location.reload(); }, 500);
+    } else {
+      showToast('error', data.message || 'Ошибка добавления');
+    }
+  })
+  .catch(function(e) {
+    showToast('error', 'Ошибка: ' + e);
+  });
+}
+
+function filterServices(query){
+  var q = query.toLowerCase();
+  document.querySelectorAll('.service-card').forEach(function(card) {
+    card.style.display = card.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+  });
+}
+
+function filterByCategory(cat){
+  document.querySelectorAll('.service-card').forEach(function(card) {
+    card.style.display = (cat === 'all' || card.dataset.category === cat) ? 'block' : 'none';
+  });
+}
+
+function showToast(type, message){
+  var container = document.getElementById('toastContainer') || document.body;
+  var toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:300;background:' + 
+    (type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6') + 
+    ';color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;box-shadow:0 10px 15px rgba(0,0,0,0.1)';
+  toast.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle') + '"></i><span>' + message + '</span>';
+  container.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 3000);
+}
+</script>

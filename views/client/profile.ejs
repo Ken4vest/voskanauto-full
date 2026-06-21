@@ -1,0 +1,61 @@
+<%- include('../partials/client_layout') %>
+
+<div class="cards-grid">
+<div class="card">
+<div class="card-header"><div class="card-title"><i class="fas fa-user" style="color:var(--primary);margin-right:8px"></i>Мой профиль</div></div>
+<div class="card-body">
+<form method="POST" action="/client/profile">
+<div class="form-row">
+<div class="form-group"><label class="form-label">ФИО</label><input type="text" name="full_name" class="form-input" value="<%= user.full_name %>" required></div>
+<div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" value="<%= user.email %>" disabled style="background:var(--gray-light)"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Телефон</label><input type="text" name="phone" class="form-input" value="<%= user.phone || '' %>"></div>
+<div class="form-group"><label class="form-label">Скидка</label><input type="text" class="form-input" value="<%= user.discount_percent || 0 %>%" disabled style="background:var(--gray-light)"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Бонусные баллы</label><input type="text" class="form-input" value="<%= user.bonus_points || 0 %>" disabled style="background:var(--gray-light)"></div>
+<div class="form-group"><label class="form-label">Тип</label><input type="text" class="form-input" value="<%= user.company_name ? 'Юр. лицо' : 'Физ. лицо' %>" disabled style="background:var(--gray-light)"></div>
+</div>
+<% if (user.company_name) { %>
+<div class="form-group"><label class="form-label">Название компании</label><input type="text" name="company_name" class="form-input" value="<%= user.company_name %>"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">ИНН</label><input type="text" name="inn" class="form-input" value="<%= user.inn || '' %>"></div>
+<div class="form-group"><label class="form-label">КПП</label><input type="text" name="kpp" class="form-input" value="<%= user.kpp || '' %>"></div>
+</div>
+<% } %>
+<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Сохранить изменения</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</div><div class="card-actions"><a href="/client/cars" class="btn btn-outline btn-sm">Управлять</a></div></div>
+<div class="card-body" style="padding:0">
+<% if (cars.length > 0) { %>
+<table class="data-table">
+<thead><tr><th>Марка</th><th>Модель</th><th>Год</th><th>Гос. номер</th></tr></thead>
+<tbody>
+<% cars.forEach(car => { %>
+<tr><td><%= car.brand %></td><td><%= car.model %></td><td><%= car.year || '—' %></td><td><span class="car-plate"><%= car.license_plate || '—' %></span></td></tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state" style="padding:24px"><i class="fas fa-car"></i><h3>Нет автомобилей</h3><p><a href="/client/cars">Добавьте первый автомобиль</a></p></div>
+<% } %>
+</div>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

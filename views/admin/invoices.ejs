@@ -1,0 +1,74 @@
+<%- include('../partials/layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-file-invoice" style="color:var(--primary);margin-right:8px"></i>Счета</h2>
+<button class="btn btn-primary" onclick="openModal('addInvoice')"><i class="fas fa-plus"></i> Новый счёт</button>
+</div>
+
+<div class="card">
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>№</th><th>Клиент</th><th>Описание</th><th>Сумма</th><th>Статус</th><th>Срок</th><th>Действия</th></tr></thead>
+<tbody>
+<% invoices.forEach(inv => { %>
+<tr>
+<td><strong><%= inv.invoice_number %></strong></td>
+<td><%= inv.client_name %></td>
+<td><%= inv.description || '—' %></td>
+<td><span class="amount">₽<%= inv.amount.toLocaleString() %></span></td>
+<td><%= inv.status === 'pending' ? '<span class="status-badge status-pending">Не оплачен</span>' : '<span class="status-badge status-paid">Оплачен</span>' %></td>
+<td><%= inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—' %></td>
+<td>
+<% if (inv.status === 'pending') { %>
+<form method="POST" action="/admin/invoices/<%= inv.id %>/pay" style="display:inline"><button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Оплатить</button></form>
+<% } %>
+</td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="modal-overlay" id="addInvoiceModal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header"><div class="modal-title">Новый счёт</div><button class="modal-close" onclick="closeModal('addInvoiceModal')"><i class="fas fa-times"></i></button></div>
+<div class="modal-body">
+<form id="addInvoiceForm" method="POST" action="/admin/invoices">
+<div class="form-group"><label class="form-label">Клиент *</label><select name="client_id" class="form-select" required>
+<option value="">— Выберите —</option>
+<% clients.forEach(c => { %>
+<option value="<%= c.id %>"><%= c.full_name %></option>
+<% }) %>
+</select></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Сумма (₽) *</label><input type="number" name="amount" class="form-input" required min="1"></div>
+<div class="form-group"><label class="form-label">Срок оплаты</label><input type="date" name="due_date" class="form-input"></div>
+</div>
+<div class="form-group"><label class="form-label">Описание</label><textarea name="description" class="form-textarea"></textarea></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('addInvoiceModal')">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('addInvoiceForm').submit()"><i class="fas fa-save"></i> Выставить</button>
+</div>
+</div>
+</div>
+
+<script>
+function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

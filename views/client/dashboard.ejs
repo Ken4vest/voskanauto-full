@@ -1,0 +1,166 @@
+<%- include('../partials/client_layout') %>
+
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-header"><div class="stat-label">Мои авто</div><div class="stat-icon blue"><i class="fas fa-car"></i></div></div>
+<div class="stat-value"><%= cars.length %></div>
+<div class="stat-change up"><i class="fas fa-arrow-up"></i> <a href="/client/cars" style="color:var(--success);text-decoration:none">Управлять</a></div>
+</div>
+<div class="stat-card">
+<div class="stat-header"><div class="stat-label">Активные заказы</div><div class="stat-icon green"><i class="fas fa-clipboard-list"></i></div></div>
+<div class="stat-value"><%= orders.filter(o=>['created','in_progress','waiting_parts'].includes(o.status)).length %></div>
+<div class="stat-change up"><i class="fas fa-arrow-up"></i> <a href="/client/orders" style="color:var(--success);text-decoration:none">Смотреть</a></div>
+</div>
+<div class="stat-card">
+<div class="stat-header"><div class="stat-label">Бонусные баллы</div><div class="stat-icon orange"><i class="fas fa-star"></i></div></div>
+<div class="stat-value"><%= user.bonus_points || 0 %></div>
+<div class="stat-change up"><i class="fas fa-arrow-up"></i> Накоплено</div>
+</div>
+<div class="stat-card">
+<div class="stat-header"><div class="stat-label">Скидка</div><div class="stat-icon red"><i class="fas fa-percentage"></i></div></div>
+<div class="stat-value"><%= user.discount_percent || 0 %>%</div>
+<div class="stat-change up"><i class="fas fa-arrow-up"></i> Постоянный клиент</div>
+</div>
+</div>
+
+<div class="quick-actions">
+<div class="quick-action" onclick="location.href='/client/appointments'"><i class="fas fa-calendar-plus"></i><span>Запись на ТО</span></div>
+<div class="quick-action" onclick="location.href='/client/wash'"><i class="fas fa-soap"></i><span>Запись на мойку</span></div>
+<div class="quick-action" onclick="location.href='/client/services'"><i class="fas fa-wrench"></i><span>Заказать услугу</span></div>
+<div class="quick-action" onclick="location.href='/client/parts'"><i class="fas fa-cogs"></i><span>Купить запчасти</span></div>
+</div>
+
+<div class="cards-grid">
+<div class="card">
+<div class="card-header"><div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</div><div class="card-actions"><a href="/client/cars" class="btn btn-outline btn-sm">Все авто</a></div></div>
+<div class="card-body" style="padding:0">
+<% if (cars.length > 0) { %>
+<table class="data-table">
+<thead><tr><th>Марка</th><th>Модель</th><th>Год</th><th>Гос. номер</th><th>VIN</th></tr></thead>
+<tbody>
+<% cars.forEach(car => { %>
+<tr>
+<td><div class="car-info"><div class="car-avatar"><i class="fas fa-car"></i></div><div class="car-details"><div class="car-model"><%= car.brand %></div></div></div></td>
+<td><%= car.model %></td>
+<td><%= car.year || '—' %></td>
+<td><span class="car-plate"><%= car.license_plate || '—' %></span></td>
+<td><%= car.vin ? car.vin.substring(0,8)+'...' : '—' %></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-car"></i><h3>Нет автомобилей</h3><p><a href="/client/cars">Добавьте первый автомобиль</a></p></div>
+<% } %>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title"><i class="fas fa-clipboard-list" style="color:var(--primary);margin-right:8px"></i>Последние заказ-наряды</div><div class="card-actions"><a href="/client/orders" class="btn btn-outline btn-sm">Все</a></div></div>
+<div class="card-body" style="padding:0">
+<% if (orders.length > 0) { %>
+<table class="data-table">
+<thead><tr><th>№</th><th>Дата</th><th>Авто</th><th>Статус</th><th>Сумма</th></tr></thead>
+<tbody>
+<% orders.slice(0,5).forEach(order => { %>
+<tr>
+<td><a href="/client/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
+<td><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></td>
+<td><%= order.brand ? order.brand + ' ' + order.model : '—' %></td>
+<td>
+<% if (order.status === 'created') { %><span class="status-badge status-created">Создан</span>
+<% } else if (order.status === 'in_progress') { %><span class="status-badge status-work">В работе</span>
+<% } else if (order.status === 'waiting_parts') { %><span class="status-badge status-wait">Ожидает запчастей</span>
+<% } else if (order.status === 'ready') { %><span class="status-badge status-ready">Готов</span>
+<% } else if (order.status === 'completed') { %><span class="status-badge status-done">Выдан</span>
+<% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
+</td>
+<td><span class="amount">₽<%= order.total_amount.toLocaleString() %></span></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Нет заказов</h3><p><a href="/client/services">Закажите первую услугу</a></p></div>
+<% } %>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-header"><div class="card-title"><i class="fas fa-calendar-alt" style="color:var(--secondary);margin-right:8px"></i>Ближайшие записи</div><div class="card-actions"><a href="/client/appointments" class="btn btn-outline btn-sm">Все записи</a></div></div>
+<div class="card-body" style="padding:0">
+<% if (appointments.length > 0) { %>
+<table class="data-table">
+<thead><tr><th>Дата</th><th>Время</th><th>Услуга</th><th>Автомобиль</th><th>Статус</th></tr></thead>
+<tbody>
+<% appointments.filter(a=>a.status!=='cancelled').slice(0,5).forEach(app => { %>
+<tr>
+<td><%= new Date(app.appointment_date).toLocaleDateString('ru-RU') %></td>
+<td><%= app.appointment_time %></td>
+<td><%= app.service_name || '—' %></td>
+<td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
+<td>
+<% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
+<% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
+<% } else { %><span class="status-badge status-cancel">Отменено</span><% } %>
+</td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>Нет записей</h3><p><a href="/client/appointments">Запишитесь на обслуживание</a></p></div>
+<% } %>
+</div>
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-header"><div class="card-title"><i class="fas fa-file-invoice" style="color:var(--danger);margin-right:8px"></i>Счета к оплате</div><div class="card-actions"><a href="/client/invoices" class="btn btn-outline btn-sm">Все счета</a></div></div>
+<div class="card-body" style="padding:0">
+<% if (invoices.filter(i=>i.status==='pending').length > 0) { %>
+<table class="data-table">
+<thead><tr><th>№ счёта</th><th>Дата</th><th>Описание</th><th>Сумма</th><th>Срок</th><th>Действия</th></tr></thead>
+<tbody>
+<% invoices.filter(i=>i.status==='pending').forEach(inv => { %>
+<tr>
+<td><strong><%= inv.invoice_number %></strong></td>
+<td><%= new Date(inv.created_at).toLocaleDateString('ru-RU') %></td>
+<td><%= inv.description || '—' %></td>
+<td><span class="amount" style="color:var(--danger)">₽<%= inv.amount.toLocaleString() %></span></td>
+<td><%= inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—' %></td>
+<td><button class="btn btn-success btn-sm" onclick="payInvoice(<%= inv.id %>)"><i class="fas fa-credit-card"></i> Оплатить</button></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-check-circle"></i><h3>Все счета оплачены</h3><p>У вас нет неоплаченных счетов</p></div>
+<% } %>
+</div>
+</div>
+
+<script>
+function payInvoice(id){
+  if(!confirm('Оплатить счёт?')) return;
+  fetch('/client/invoices/'+id+'/pay',{method:'POST'})
+    .then(r=>r.json())
+    .then(data=>{alert('Оплата прошла успешно!');location.reload();})
+    .catch(e=>alert('Ошибка: '+e));
+}
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function toggleCart(){
+  location.href='/client/cart';
+}
+</script>
+</body>
+</html>

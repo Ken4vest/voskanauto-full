@@ -1,0 +1,160 @@
+<%- include('../partials/layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-tags" style="color:var(--primary);margin-right:8px"></i>Управление услугами</h2>
+<button class="btn btn-primary" onclick="openModal('addService')"><i class="fas fa-plus"></i> Новая услуга</button>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+<div class="card-header"><div class="card-title">Активные услуги</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Код</th><th>Название</th><th>Категория</th><th>Нормо-час</th><th>Ставка</th><th>Цена</th><th>Действия</th></tr></thead>
+<tbody>
+<% services.forEach(service => { %>
+<tr>
+<td><strong><%= service.code %></strong></td>
+<td>
+<div class="client-name"><%= service.name %></div>
+<div class="client-phone"><%= service.description || '—' %></div>
+</td>
+<td><%= service.category %></td>
+<td><%= service.labor_hours %></td>
+<td>₽<%= service.hourly_rate.toLocaleString() %></td>
+<td><span class="amount">₽<%= service.price.toLocaleString() %></span></td>
+<td>
+<button class="btn btn-outline btn-sm" onclick="editService(<%= service.id %>, '<%= service.code %>', '<%= service.name %>', '<%= service.category %>', '<%= service.description %>', <%= service.labor_hours %>, <%= service.hourly_rate %>, '<%= service.compatible_brands %>')"><i class="fas fa-edit"></i></button>
+<form method="POST" action="/admin/services/<%= service.id %>/delete" style="display:inline" onsubmit="return confirm('Удалить услугу?')"><button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></form>
+</td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+
+<% if (inactive && inactive.length > 0) { %>
+<div class="card" style="margin-bottom:20px;opacity:0.7">
+<div class="card-header"><div class="card-title" style="color:var(--gray)">Неактивные услуги</div></div>
+<div class="card-body" style="padding:0">
+<table class="data-table">
+<thead><tr><th>Код</th><th>Название</th><th>Категория</th><th>Цена</th><th>Действия</th></tr></thead>
+<tbody>
+<% inactive.forEach(service => { %>
+<tr>
+<td><strong><%= service.code %></strong></td>
+<td><%= service.name %></td>
+<td><%= service.category %></td>
+<td><span class="amount">₽<%= service.price.toLocaleString() %></span></td>
+<td><form method="POST" action="/admin/services/<%= service.id %>/restore" style="display:inline"><button type="submit" class="btn btn-success btn-sm"><i class="fas fa-undo"></i> Восстановить</button></form></td>
+</tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+</div>
+<% } %>
+
+<!-- Add Service Modal -->
+<div class="modal-overlay" id="addServiceModal">
+<div class="modal" style="max-width:600px">
+<div class="modal-header"><div class="modal-title">Новая услуга</div><button class="modal-close" onclick="closeModal('addServiceModal')"><i class="fas fa-times"></i></button></div>
+<div class="modal-body">
+<form id="addServiceForm" method="POST" action="/admin/services">
+<div class="form-row">
+<div class="form-group"><label class="form-label">Код *</label><input type="text" name="code" class="form-input" placeholder="BRK-003" required pattern="[A-Z0-9\-]+" title="Только заглавные буквы, цифры и дефис"></div>
+<div class="form-group"><label class="form-label">Название *</label><input type="text" name="name" class="form-input" placeholder="Название работы" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Категория *</label><select name="category" class="form-select" required>
+<option value="">— Выберите —</option>
+<option value="ТО">ТО</option>
+<option value="Тормозная система">Тормозная система</option>
+<option value="Ходовая часть">Ходовая часть</option>
+<option value="Двигатель">Двигатель</option>
+<option value="Электрика">Электрика</option>
+<option value="Диагностика">Диагностика</option>
+<option value="Кондиционер">Кондиционер</option>
+<option value="Трансмиссия">Трансмиссия</option>
+</select></div>
+<div class="form-group"><label class="form-label">Нормо-час *</label><input type="number" name="labor_hours" class="form-input" step="0.1" min="0.1" max="1000" value="1.0" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Ставка н/ч (₽)</label><input type="number" name="hourly_rate" class="form-input" value="2500" min="1"></div>
+<div class="form-group"><label class="form-label">Совместимость</label><input type="text" name="compatible_brands" class="form-input" value="Все" placeholder="Toyota, BMW, Все..."></div>
+</div>
+<div class="form-group"><label class="form-label">Описание</label><textarea name="description" class="form-textarea" placeholder="Описание работы..."></textarea></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('addServiceModal')">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('addServiceForm').submit()"><i class="fas fa-save"></i> Сохранить</button>
+</div>
+</div>
+</div>
+
+<!-- Edit Service Modal -->
+<div class="modal-overlay" id="editServiceModal">
+<div class="modal" style="max-width:600px">
+<div class="modal-header"><div class="modal-title">Редактировать услугу</div><button class="modal-close" onclick="closeModal('editServiceModal')"><i class="fas fa-times"></i></button></div>
+<div class="modal-body">
+<form id="editServiceForm" method="POST" action="">
+<div class="form-row">
+<div class="form-group"><label class="form-label">Код *</label><input type="text" name="code" id="editCode" class="form-input" required></div>
+<div class="form-group"><label class="form-label">Название *</label><input type="text" name="name" id="editName" class="form-input" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Категория *</label><select name="category" id="editCategory" class="form-select" required>
+<option value="ТО">ТО</option>
+<option value="Тормозная система">Тормозная система</option>
+<option value="Ходовая часть">Ходовая часть</option>
+<option value="Двигатель">Двигатель</option>
+<option value="Электрика">Электрика</option>
+<option value="Диагностика">Диагностика</option>
+<option value="Кондиционер">Кондиционер</option>
+<option value="Трансмиссия">Трансмиссия</option>
+</select></div>
+<div class="form-group"><label class="form-label">Нормо-час *</label><input type="number" name="labor_hours" id="editLaborHours" class="form-input" step="0.1" min="0.1" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Ставка н/ч (₽)</label><input type="number" name="hourly_rate" id="editHourlyRate" class="form-input" min="1"></div>
+<div class="form-group"><label class="form-label">Совместимость</label><input type="text" name="compatible_brands" id="editBrands" class="form-input"></div>
+</div>
+<div class="form-group"><label class="form-label">Описание</label><textarea name="description" id="editDescription" class="form-textarea"></textarea></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('editServiceModal')">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('editServiceForm').submit()"><i class="fas fa-save"></i> Сохранить изменения</button>
+</div>
+</div>
+</div>
+
+<script>
+function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function editService(id, code, name, category, description, laborHours, hourlyRate, brands){
+  document.getElementById('editServiceForm').action = '/admin/services/' + id;
+  document.getElementById('editCode').value = code;
+  document.getElementById('editName').value = name;
+  document.getElementById('editCategory').value = category;
+  document.getElementById('editLaborHours').value = laborHours;
+  document.getElementById('editHourlyRate').value = hourlyRate;
+  document.getElementById('editBrands').value = brands;
+  document.getElementById('editDescription').value = description || '';
+  openModal('editService');
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

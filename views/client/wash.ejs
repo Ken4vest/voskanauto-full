@@ -1,0 +1,215 @@
+<%- include('../partials/client_layout') %>
+
+<div style="margin-bottom:24px">
+<h2 style="font-size:24px;font-weight:700;margin-bottom:8px"><i class="fas fa-soap" style="color:var(--primary);margin-right:12px"></i>Автомойка «ВосканАвто»</h2>
+<p style="color:var(--gray);font-size:14px">Профессиональная мойка, химчистка, полировка и кузовной ремонт</p>
+</div>
+
+<div class="wash-grid">
+<div class="wash-card">
+<div class="wash-card-image"><i class="fas fa-tint"></i></div>
+<div class="wash-card-body">
+<div class="wash-card-title">Комплексная мойка</div>
+<div class="wash-card-price">от ₽1,400</div>
+<div class="wash-card-desc">Полный комплекс услуг по уходу за вашим автомобилем</div>
+<div class="wash-card-features">
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Пылесос салона</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Химчистка салона</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Мойка двигателя</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Полировка кузова</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> До 2 машин одновременно</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Зал ожидания</div>
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="bookWash('complex', 'Комплексная мойка', 1400)"><i class="fas fa-calendar-plus"></i> Записаться</button>
+</div>
+</div>
+
+<div class="wash-card">
+<div class="wash-card-image" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="fas fa-spray-can"></i></div>
+<div class="wash-card-body">
+<div class="wash-card-title">Химчистка салона</div>
+<div class="wash-card-price">от ₽3,500</div>
+<div class="wash-card-desc">Глубокая очистка всех поверхностей салона</div>
+<div class="wash-card-features">
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Чистка сидений и ковров</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Очистка пластика и панелей</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Удаление запахов</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Обработка кожи</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Чистка потолка</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Кондиционер кожи</div>
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="bookWash('chemical', 'Химчистка салона', 3500)"><i class="fas fa-calendar-plus"></i> Записаться</button>
+</div>
+</div>
+
+<div class="wash-card">
+<div class="wash-card-image" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-gem"></i></div>
+<div class="wash-card-body">
+<div class="wash-card-title">Полировка кузова</div>
+<div class="wash-card-price">от ₽5,000</div>
+<div class="wash-card-desc">Восстановление блеска и защита лакокрасочного покрытия</div>
+<div class="wash-card-features">
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Удаление царапин</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Устранение помутнений</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Восстановление цвета</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Нанесение воска</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Керамическое покрытие</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Гарантия 6 месяцев</div>
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="bookWash('polish', 'Полировка кузова', 5000)"><i class="fas fa-calendar-plus"></i> Записаться</button>
+</div>
+</div>
+
+<div class="wash-card">
+<div class="wash-card-image" style="background:linear-gradient(135deg,#ef4444,#dc2626)"><i class="fas fa-car-crash"></i></div>
+<div class="wash-card-body">
+<div class="wash-card-title">Кузовной ремонт</div>
+<div class="wash-card-price">от ₽8,000</div>
+<div class="wash-card-desc">Полный спектр кузовных работ любой сложности</div>
+<div class="wash-card-features">
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Восстановление геометрии</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Покраска</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Полировка</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Ремонт вмятин</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Сварка</div>
+<div class="wash-feature"><i class="fas fa-check-circle"></i> Подбор краски</div>
+</div>
+<button class="btn btn-primary" style="width:100%" onclick="bookWash('body', 'Кузовной ремонт', 8000)"><i class="fas fa-calendar-plus"></i> Записаться</button>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:24px">
+<div class="card-header"><div class="card-title"><i class="fas fa-cogs" style="color:var(--primary);margin-right:8px"></i>Дополнительные услуги</div></div>
+<div class="card-body">
+<div class="service-grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="service-card" style="text-align:center">
+<i class="fas fa-wind" style="font-size:32px;color:var(--primary);margin-bottom:12px;display:block"></i>
+<div style="font-weight:600;margin-bottom:4px">Мойка двигателя</div>
+<div style="color:var(--gray);font-size:13px">от ₽1,200</div>
+</div>
+<div class="service-card" style="text-align:center">
+<i class="fas fa-snowflake" style="font-size:32px;color:var(--info);margin-bottom:12px;display:block"></i>
+<div style="font-weight:600;margin-bottom:4px">Кондиционер</div>
+<div style="color:var(--gray);font-size:13px">от ₽1,800</div>
+</div>
+<div class="service-card" style="text-align:center">
+<i class="fas fa-shield-alt" style="font-size:32px;color:var(--success);margin-bottom:12px;display:block"></i>
+<div style="font-weight:600;margin-bottom:4px">Антидождь</div>
+<div style="color:var(--gray);font-size:13px">от ₽2,500</div>
+</div>
+<div class="service-card" style="text-align:center">
+<i class="fas fa-sun" style="font-size:32px;color:var(--secondary);margin-bottom:12px;display:block"></i>
+<div style="font-weight:600;margin-bottom:4px">Тонировка</div>
+<div style="color:var(--gray);font-size:13px">от ₽3,000</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:24px">
+<div class="card-header"><div class="card-title"><i class="fas fa-info-circle" style="color:var(--info);margin-right:8px"></i>Информация</div></div>
+<div class="card-body">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+<div>
+<div style="font-weight:600;margin-bottom:8px"><i class="fas fa-wifi" style="color:var(--primary);margin-right:8px"></i>Wi-Fi</div>
+<div style="font-size:13px;color:var(--gray)">Бесплатный Wi-Fi для клиентов в зале ожидания</div>
+</div>
+<div>
+<div style="font-weight:600;margin-bottom:8px"><i class="fas fa-coffee" style="color:var(--secondary);margin-right:8px"></i>Напитки</div>
+<div style="font-size:13px;color:var(--gray)">Кофе с собой, чай с собой — бесплатно при комплексной мойке</div>
+</div>
+<div>
+<div style="font-weight:600;margin-bottom:8px"><i class="fas fa-credit-card" style="color:var(--success);margin-right:8px"></i>Оплата</div>
+<div style="font-size:13px;color:var(--gray)">Картой, наличными, переводом, QR-кодом</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal for booking -->
+<div class="modal-overlay" id="washModal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header">
+<div class="modal-title">Запись на мойку</div>
+<button class="modal-close" onclick="closeWashModal()"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body">
+<form id="washForm" method="POST" action="/client/appointments">
+<input type="hidden" name="service_type" id="washServiceType">
+<div class="form-group">
+<label class="form-label">Услуга</label>
+<input type="text" id="washServiceName" class="form-input" readonly style="background:var(--gray-light)">
+</div>
+<div class="form-group">
+<label class="form-label">Автомобиль</label>
+<select name="car_id" class="form-select" required>
+<option value="">— Выберите авто —</option>
+<% if (typeof cars !== 'undefined') { cars.forEach(car => { %>
+<option value="<%= car.id %>"><%= car.brand %> <%= car.model %> (<%= car.license_plate || 'без номера' %>)</option>
+<% })} %>
+</select>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label">Дата *</label>
+<input type="date" name="appointment_date" class="form-input" required min="<%= new Date().toISOString().split('T')[0] %>">
+</div>
+<div class="form-group">
+<label class="form-label">Время *</label>
+<select name="appointment_time" class="form-select" required>
+<option value="">— Выберите —</option>
+<option value="08:00">08:00</option>
+<option value="09:00">09:00</option>
+<option value="10:00">10:00</option>
+<option value="11:00">11:00</option>
+<option value="12:00">12:00</option>
+<option value="13:00">13:00</option>
+<option value="14:00">14:00</option>
+<option value="15:00">15:00</option>
+<option value="16:00">16:00</option>
+<option value="17:00">17:00</option>
+<option value="18:00">18:00</option>
+<option value="19:00">19:00</option>
+<option value="20:00">20:00</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Комментарий</label>
+<textarea name="notes" class="form-textarea" placeholder="Особые пожелания..."></textarea>
+</div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeWashModal()">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('washForm').submit()"><i class="fas fa-calendar-check"></i> Записаться</button>
+</div>
+</div>
+</div>
+
+<script>
+function bookWash(type, name, price){
+  document.getElementById('washServiceType').value = type;
+  document.getElementById('washServiceName').value = name + ' (от ₽' + price.toLocaleString() + ')';
+  document.getElementById('washModal').classList.add('active');
+}
+function closeWashModal(){
+  document.getElementById('washModal').classList.remove('active');
+}
+document.getElementById('washModal').addEventListener('click', function(e){
+  if(e.target === this) closeWashModal();
+});
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>

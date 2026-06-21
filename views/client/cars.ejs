@@ -1,0 +1,79 @@
+<%- include('../partials/client_layout') %>
+
+<div class="filters-row">
+<h2 style="font-size:20px;font-weight:700"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</h2>
+<button class="btn btn-primary" onclick="openModal('addCar')"><i class="fas fa-plus"></i> Добавить авто</button>
+</div>
+
+<% if (cars.length > 0) { %>
+<div class="cards-grid">
+<% cars.forEach(car => { %>
+<div class="card">
+<div class="card-header">
+<div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i><%= car.brand %> <%= car.model %></div>
+<div class="card-actions"><span class="car-plate"><%= car.license_plate || '—' %></span></div>
+</div>
+<div class="card-body">
+<div class="form-row">
+<div class="form-group"><label class="form-label">Год выпуска</label><div class="form-input" style="background:var(--gray-light)"><%= car.year || '—' %></div></div>
+<div class="form-group"><label class="form-label">VIN</label><div class="form-input" style="background:var(--gray-light)"><%= car.vin || '—' %></div></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Пробег</label><div class="form-input" style="background:var(--gray-light)"><%= car.mileage ? car.mileage.toLocaleString() + ' км' : '—' %></div></div>
+<div class="form-group"><label class="form-label">Цвет</label><div class="form-input" style="background:var(--gray-light)"><%= car.color || '—' %></div></div>
+</div>
+<div style="margin-top:12px">
+<a href="/client/appointments" class="btn btn-primary btn-sm"><i class="fas fa-calendar-plus"></i> Записать на ТО</a>
+</div>
+</div>
+</div>
+<% }) %>
+</div>
+<% } else { %>
+<div class="empty-state"><i class="fas fa-car"></i><h3>Нет автомобилей</h3><p>Добавьте свой первый автомобиль, чтобы записываться на обслуживание</p></div>
+<% } %>
+
+<div class="modal-overlay" id="addCarModal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header"><div class="modal-title">Добавить автомобиль</div><button class="modal-close" onclick="closeModal('addCarModal')"><i class="fas fa-times"></i></button></div>
+<div class="modal-body">
+<form id="addCarForm" method="POST" action="/client/cars">
+<div class="form-row">
+<div class="form-group"><label class="form-label">Марка *</label><input type="text" name="brand" class="form-input" placeholder="Toyota" required></div>
+<div class="form-group"><label class="form-label">Модель *</label><input type="text" name="model" class="form-input" placeholder="Camry" required></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Год</label><input type="number" name="year" class="form-input" placeholder="2020"></div>
+<div class="form-group"><label class="form-label">Гос. номер</label><input type="text" name="license_plate" class="form-input" placeholder="А123БВ 77"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">VIN</label><input type="text" name="vin" class="form-input" placeholder="XTA..."></div>
+<div class="form-group"><label class="form-label">Пробег (км)</label><input type="number" name="mileage" class="form-input" placeholder="50000"></div>
+</div>
+<div class="form-group"><label class="form-label">Цвет</label><input type="text" name="color" class="form-input" placeholder="Чёрный"></div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('addCarModal')">Отмена</button>
+<button class="btn btn-primary" onclick="document.getElementById('addCarForm').submit()"><i class="fas fa-save"></i> Сохранить</button>
+</div>
+</div>
+</div>
+
+<script>
+function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+</script>
+
+</div>
+</main>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+</script>
+</body>
+</html>
