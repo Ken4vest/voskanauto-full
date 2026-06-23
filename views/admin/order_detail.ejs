@@ -15,7 +15,7 @@
 </select>
 </form>
 <% if (order.status === 'ready') { %>
-<button class="btn btn-success" onclick="sendOrder(<%= order.id %>)"><i class="fas fa-paper-plane"></i> Отправить клиенту</button>
+<button class="btn btn-success send-order-btn" data-order-id="<%= order.id %>"><i class="fas fa-paper-plane"></i> Отправить клиенту</button>
 <% } %>
 </div>
 </div>

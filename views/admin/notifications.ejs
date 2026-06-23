@@ -9,9 +9,25 @@
 <% if (notifications.length > 0) { %>
 <div class="activity-list">
 <% notifications.forEach(notif => { %>
+  <%
+    let bgColor, textColor, iconClass;
+    if (notif.type === 'order') {
+      bgColor = '#dbeafe';
+      textColor = '#1e40af';
+      iconClass = 'clipboard-list';
+    } else if (notif.type === 'invoice') {
+      bgColor = '#fef3c7';
+      textColor = '#92400e';
+      iconClass = 'file-invoice';
+    } else {
+      bgColor = '#f3e8ff';
+      textColor = '#7c3aed';
+      iconClass = 'bell';
+    }
+  %>
 <div class="activity-item">
-<div class="activity-icon" style="background:<%= notif.type==='order'?'#dbeafe':notif.type==='invoice'?'#fef3c7':'#f3e8ff' %>;color:<%= notif.type==='order'?'#1e40af':notif.type==='invoice'?'#92400e':'#7c3aed' %>">
-<i class="fas fa-<%= notif.type==='order'?'clipboard-list':notif.type==='invoice'?'file-invoice':'bell' %>"></i>
+<div class="activity-icon" data-bg="<%= bgColor %>" data-color="<%= textColor %>">
+<i class="fas fa-<%= iconClass %>"></i>
 </div>
 <div class="activity-content">
 <div class="activity-text"><strong><%= notif.title %></strong></div>
@@ -31,6 +47,11 @@
 </main>
 </div>
 <script>
+document.querySelectorAll('.activity-icon[data-bg]').forEach(el => {
+  el.style.background = el.dataset.bg;
+  el.style.color = el.dataset.color;
+});
+
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sidebarOverlay').classList.toggle('active');

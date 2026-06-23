@@ -23,7 +23,17 @@
 <td>₽<%= service.hourly_rate.toLocaleString() %></td>
 <td><span class="amount">₽<%= service.price.toLocaleString() %></span></td>
 <td>
-<button class="btn btn-outline btn-sm" onclick="editService(<%= service.id %>, '<%= service.code %>', '<%= service.name %>', '<%= service.category %>', '<%= service.description %>', <%= service.labor_hours %>, <%= service.hourly_rate %>, '<%= service.compatible_brands %>')"><i class="fas fa-edit"></i></button>
+<button class="btn btn-outline btn-sm edit-service-btn" 
+  data-id="<%= service.id %>" 
+  data-code="<%= service.code %>" 
+  data-name="<%= service.name %>" 
+  data-category="<%= service.category %>" 
+  data-description="<%= service.description %>" 
+  data-labor-hours="<%= service.labor_hours %>" 
+  data-hourly-rate="<%= service.hourly_rate %>" 
+  data-compatible-brands="<%= service.compatible_brands %>">
+  <i class="fas fa-edit"></i>
+</button>
 <form method="POST" action="/admin/services/<%= service.id %>/delete" style="display:inline" onsubmit="return confirm('Удалить услугу?')"><button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></form>
 </td>
 </tr>

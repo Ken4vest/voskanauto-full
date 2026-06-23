@@ -14,7 +14,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 .sidebar{width:260px;background:var(--white);border-right:1px solid var(--gray-border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;transition:transform .3s ease}
 .sidebar-header{padding:20px;border-bottom:1px solid var(--gray-border);display:flex;align-items:center;gap:12px}
 .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:white;font-size:18px}
-.logo-text{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .logo-sub{font-size:11px;color:var(--gray);font-weight:500}
 .nav-menu{flex:1;padding:16px 12px;overflow-y:auto}
 .nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);padding:16px 12px 8px}

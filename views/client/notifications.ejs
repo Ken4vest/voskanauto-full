@@ -1,35 +1,52 @@
 <%- include('../partials/client_layout') %>
 
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-bell" style="color:var(--primary);margin-right:8px"></i>Уведомления</h2>
+  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-bell" style="color:var(--primary);margin-right:8px"></i>Уведомления</h2>
 </div>
 
 <div class="card">
-<div class="card-body">
-<% if (notifications.length > 0) { %>
-<div class="activity-list">
-<% notifications.forEach(notif => { %>
-<div class="activity-item">
-<div class="activity-icon" style="background:<%= notif.type==='order'?'#dbeafe':notif.type==='invoice'?'#fef3c7':notif.type==='appointment'?'#d1fae5':'#f3e8ff' %>;color:<%= notif.type==='order'?'#1e40af':notif.type==='invoice'?'#92400e':notif.type==='appointment'?'#065f46':'#7c3aed' %>">
-<i class="fas fa-<%= notif.type==='order'?'clipboard-list':notif.type==='invoice'?'file-invoice':notif.type==='appointment'?'calendar-check':'bell' %>"></i>
-</div>
-<div class="activity-content">
-<div class="activity-text"><strong><%= notif.title %></strong></div>
-<div class="activity-text"><%= notif.message %></div>
-<div class="activity-time"><%= new Date(notif.created_at).toLocaleString('ru-RU') %></div>
-</div>
-</div>
-<% }) %>
-</div>
-<% } else { %>
-<div class="empty-state"><i class="fas fa-bell"></i><h3>Нет уведомлений</h3><p>Здесь будут появляться уведомления о ваших заказах и записях</p></div>
-<% } %>
-</div>
+  <div class="card-body">
+    <% if (notifications.length > 0) { %>
+      <div class="activity-list">
+        <% notifications.forEach(notif => { %>
+          <%
+            let iconBg;
+            let iconClass;
+            if (notif.type === 'order') {
+              iconBg = '#dbeafe';
+              iconClass = 'clipboard-list';
+            } else if (notif.type === 'invoice') {
+              iconBg = '#fef3c7';
+              iconClass = 'file-invoice';
+            } else if (notif.type === 'appointment') {
+              iconBg = '#d1fae5';
+              iconClass = 'calendar-check';
+            } else {
+              iconBg = '#e5e7eb';
+              iconClass = 'bell';
+            }
+          %>
+          <div class="activity-item">
+            <div class="activity-icon" data-bg="<%= iconBg %>">
+              <i class="fas fa-<%= iconClass %>"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-text"><strong><%= notif.title %></strong></div>
+              <div class="activity-text"><%= notif.message %></div>
+              <div class="activity-time"><%= new Date(notif.created_at).toLocaleString('ru-RU') %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state"><i class="fas fa-bell"></i><h3>Нет уведомлений</h3><p>Здесь будут появляться уведомления о ваших заказах и записи.</p></div>
+    <% } %>
+  </div>
 </div>
 
 </div>
 </main>
-</div>
+
 <script>
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');

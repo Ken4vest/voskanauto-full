@@ -43,7 +43,9 @@
 <td>
 <a href="/admin/orders/<%= order.id %>" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
 <% if (order.status === 'ready') { %>
-<button class="btn btn-success btn-sm" onclick="sendOrder(<%= order.id %>)"><i class="fas fa-paper-plane"></i></button>
+<% if (order.status === 'ready') { %>
+<button class="btn btn-success btn-sm send-order-btn" data-order-id="<%= order.id %>"><i class="fas fa-paper-plane"></i></button>
+<% } %>
 <% } %>
 </td>
 </tr>

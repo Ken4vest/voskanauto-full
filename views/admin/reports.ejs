@@ -1,9 +1,9 @@
 <%- include('../partials/layout') %>
 
 <div class="tabs">
-<div class="tab active" onclick="switchTab(this,'report-revenue')">Выручка</div>
-<div class="tab" onclick="switchTab(this,'report-popular')">Популярные услуги</div>
-<div class="tab" onclick="switchTab(this,'report-mechanics')">Мастера</div>
+<div class="tab active" data-tab="report-revenue">Выручка</div>
+<div class="tab" data-tab="report-popular">Популярные услуги</div>
+<div class="tab" data-tab="report-mechanics">Мастера</div>
 </div>
 
 <div id="report-revenue" class="report-tab active">
@@ -13,7 +13,8 @@
 <% if (revenueByDay.length > 0) { %>
 <div class="chart-bar">
 <% revenueByDay.forEach((day, i) => { %>
-<div class="chart-bar-item" style="height:<%= Math.min(100, (day.total / 100000) * 100) %>%">
+<% const barHeight = Math.min(100, (day.total / 100000) * 100); %>
+<div class="chart-bar-item" data-bar-height="<%= barHeight %>">
 <span class="chart-bar-value">₽<%= (day.total/1000).toFixed(0) %>K</span>
 <span class="chart-bar-label"><%= new Date(day.date).getDate() %></span>
 </div>
@@ -59,11 +60,22 @@
 </div>
 
 <script>
+document.querySelectorAll('.tabs .tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const tabId = this.dataset.tab;
+    switchTab(this, tabId);
+  });
+});
+
+document.querySelectorAll('.chart-bar-item[data-bar-height]').forEach(el => {
+  el.style.height = el.dataset.barHeight + '%';
+});
+
 function switchTab(tabEl, tabId){
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
   tabEl.classList.add('active');
-  document.querySelectorAll('.report-tab').forEach(t=>t.style.display='none');
-  document.getElementById(tabId).style.display='block';
+  document.querySelectorAll('.report-tab').forEach(t => t.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
 }
 </script>
 
