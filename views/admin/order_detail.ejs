@@ -1,103 +1,101 @@
-<%- include('../partials/layout') %>
-
 <div class="card" style="margin-bottom:20px">
-<div class="card-header">
-<div class="card-title">Заказ-наряд #<%= order.order_number %></div>
-<div class="card-actions">
-<form method="POST" action="/admin/orders/<%= order.id %>/status" style="display:inline">
-<select name="status" class="filter-input" style="min-width:160px" onchange="this.form.submit()">
-<option value="created" <%= order.status === 'created' ? 'selected' : '' %>>Создан</option>
-<option value="in_progress" <%= order.status === 'in_progress' ? 'selected' : '' %>>В работе</option>
-<option value="waiting_parts" <%= order.status === 'waiting_parts' ? 'selected' : '' %>>Ожидает запчастей</option>
-<option value="ready" <%= order.status === 'ready' ? 'selected' : '' %>>Готов</option>
-<option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Выдан</option>
-<option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Отменён</option>
-</select>
-</form>
-<% if (order.status === 'ready') { %>
-<button class="btn btn-success send-order-btn" data-order-id="<%= order.id %>"><i class="fas fa-paper-plane"></i> Отправить клиенту</button>
-<% } %>
-</div>
-</div>
-<div class="card-body">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Клиент</label><div class="form-input" style="background:var(--gray-light)"><%= order.client_name %> (<%= order.client_phone %>)</div></div>
-<div class="form-group"><label class="form-label">Email клиента</label><div class="form-input" style="background:var(--gray-light)"><%= order.client_email || '—' %></div></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Автомобиль</label><div class="form-input" style="background:var(--gray-light)"><%= order.brand ? order.brand + ' ' + order.model + ' (' + order.license_plate + ')' : '—' %></div></div>
-<div class="form-group"><label class="form-label">VIN</label><div class="form-input" style="background:var(--gray-light)"><%= order.vin || '—' %></div></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Исполнитель</label><div class="form-input" style="background:var(--gray-light)"><%= order.mechanic_name || 'Не назначен' %></div></div>
-<div class="form-group"><label class="form-label">Пост</label><div class="form-input" style="background:var(--gray-light)"><%= order.post_number ? 'Пост ' + order.post_number : '—' %></div></div>
-</div>
-<div class="form-group"><label class="form-label">Описание работ</label><div class="form-textarea" style="background:var(--gray-light);min-height:60px"><%= order.description || '—' %></div></div>
-</div>
+  <div class="card-header">
+    <div class="card-title">Заказ-наряд #<%= order.order_number %></div>
+    <div class="card-actions">
+      <form method="POST" action="/admin/orders/<%= order.id %>/status" style="display:inline">
+        <select name="status" class="filter-input" style="min-width:160px" onchange="this.form.submit()">
+          <option value="created" <%= order.status === 'created' ? 'selected' : '' %>>Создан</option>
+          <option value="in_progress" <%= order.status === 'in_progress' ? 'selected' : '' %>>В работе</option>
+          <option value="waiting_parts" <%= order.status === 'waiting_parts' ? 'selected' : '' %>>Ожидает запчастей</option>
+          <option value="ready" <%= order.status === 'ready' ? 'selected' : '' %>>Готов</option>
+          <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Выдан</option>
+          <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Отменён</option>
+        </select>
+      </form>
+      <% if (order.status === 'ready') { %>
+      <button class="btn btn-success send-order-btn" data-order-id="<%= order.id %>" onclick="sendOrder(<%= order.id %>)"><i class="fas fa-paper-plane"></i> Отправить клиенту</button>
+      <% } %>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Клиент</label><div class="form-input" style="background:var(--gray-light)"><%= order.client_name || '—' %> (<%= order.client_phone || '—' %>)</div></div>
+      <div class="form-group"><label class="form-label">Email клиента</label><div class="form-input" style="background:var(--gray-light)"><%= order.client_email || '—' %></div></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Автомобиль</label><div class="form-input" style="background:var(--gray-light)"><%= order.brand ? order.brand + ' ' + order.model + ' (' + order.license_plate + ')' : '—' %></div></div>
+      <div class="form-group"><label class="form-label">VIN</label><div class="form-input" style="background:var(--gray-light)"><%= order.vin || '—' %></div></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Исполнитель</label><div class="form-input" style="background:var(--gray-light)"><%= order.mechanic_name || 'Не назначен' %></div></div>
+      <div class="form-group"><label class="form-label">Пост</label><div class="form-input" style="background:var(--gray-light)"><%= order.post_number ? 'Пост ' + order.post_number : '—' %></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Описание работ</label><div class="form-textarea" style="background:var(--gray-light);min-height:60px"><%= order.description || '—' %></div></div>
+  </div>
 </div>
 
 <div class="cards-grid">
-<div class="card">
-<div class="card-header"><div class="card-title">Работы</div></div>
-<div class="card-body" style="padding:0">
-<table class="data-table">
-<thead><tr><th>Услуга</th><th>Категория</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
-<tbody>
-<% if (order.services && order.services.length > 0) { %>
-<% order.services.forEach(s => { %>
-<tr><td><%= s.service_name %></td><td><%= s.category %></td><td><%= s.quantity %></td><td>₽<%= s.price.toLocaleString() %></td><td><span class="amount">₽<%= s.total.toLocaleString() %></span></td></tr>
-<% }) %>
-<% } else { %>
-<tr><td colspan="5" style="text-align:center;color:var(--gray)">Работы не добавлены</td></tr>
-<% } %>
-</tbody>
-</table>
-</div>
-</div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Работы</div></div>
+    <div class="card-body" style="padding:0">
+      <table class="data-table">
+        <thead><tr><th>Услуга</th><th>Категория</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
+        <tbody>
+          <% if (order.services && order.services.length > 0) { %>
+            <% order.services.forEach(s => { %>
+            <tr><td><%= s.service_name %></td><td><%= s.category %></td><td><%= s.quantity %></td><td>₽<%= (s.price || 0).toLocaleString() %></td><td><span class="amount">₽<%= (s.total || 0).toLocaleString() %></span></td></tr>
+            <% }) %>
+          <% } else { %>
+            <tr><td colspan="5" style="text-align:center;color:var(--gray)">Работы не добавлены</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-<div class="card">
-<div class="card-header"><div class="card-title">Запчасти</div></div>
-<div class="card-body" style="padding:0">
-<table class="data-table">
-<thead><tr><th>Артикул</th><th>Наименование</th><th>Производитель</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
-<tbody>
-<% if (order.parts && order.parts.length > 0) { %>
-<% order.parts.forEach(p => { %>
-<tr><td><%= p.article %></td><td><%= p.part_name %></td><td><%= p.manufacturer %></td><td><%= p.quantity %></td><td>₽<%= p.price.toLocaleString() %></td><td><span class="amount">₽<%= p.total.toLocaleString() %></span></td></tr>
-<% }) %>
-<% } else { %>
-<tr><td colspan="6" style="text-align:center;color:var(--gray)">Запчасти не добавлены</td></tr>
-<% } %>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-
-<div class="card" style="margin-top:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-calculator" style="color:var(--primary);margin-right:8px"></i>Итого</div></div>
-<div class="card-body">
-<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость работ:</span><span class="amount">₽<%= order.total_labor_cost.toLocaleString() %></span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость запчастей:</span><span class="amount">₽<%= order.total_parts_cost.toLocaleString() %></span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:20px;font-weight:700"><span>ИТОГО:</span><span style="color:var(--primary)">₽<%= order.total_amount.toLocaleString() %></span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>Оплачено:</span><span class="amount" style="color:var(--success)">₽<%= order.paid_amount.toLocaleString() %></span></div>
-<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>Остаток:</span><span class="amount" style="color:var(--danger)">₽<%= (order.total_amount - order.paid_amount).toLocaleString() %></span></div>
-</div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Запчасти</div></div>
+    <div class="card-body" style="padding:0">
+      <table class="data-table">
+        <thead><tr><th>Артикул</th><th>Наименование</th><th>Производитель</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
+        <tbody>
+          <% if (order.parts && order.parts.length > 0) { %>
+            <% order.parts.forEach(p => { %>
+            <tr><td><%= p.article %></td><td><%= p.part_name %></td><td><%= p.manufacturer %></td><td><%= p.quantity %></td><td>₽<%= (p.price || 0).toLocaleString() %></td><td><span class="amount">₽<%= (p.total || 0).toLocaleString() %></span></td></tr>
+            <% }) %>
+          <% } else { %>
+            <tr><td colspan="6" style="text-align:center;color:var(--gray)">Запчасти не добавлены</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <div class="card" style="margin-top:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-file-invoice" style="color:var(--secondary);margin-right:8px"></i>Выставить счёт клиенту</div></div>
-<div class="card-body">
-<form method="POST" action="/admin/clients/<%= order.client_id %>/invoices">
-<input type="hidden" name="order_id" value="<%= order.id %>">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Сумма счёта (₽)</label><input type="number" name="amount" class="form-input" value="<%= order.total_amount - order.paid_amount %>" required></div>
-<div class="form-group"><label class="form-label">Срок оплаты</label><input type="date" name="due_date" class="form-input" required></div>
+  <div class="card-header"><div class="card-title"><i class="fas fa-calculator" style="color:var(--primary);margin-right:8px"></i>Итого</div></div>
+  <div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость работ:</span><span class="amount">₽<%= (order.total_labor_cost || 0).toLocaleString() %></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-border)"><span>Стоимость запчастей:</span><span class="amount">₽<%= (order.total_parts_cost || 0).toLocaleString() %></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:20px;font-weight:700"><span>ИТОГО:</span><span style="color:var(--primary)">₽<%= (order.total_amount || 0).toLocaleString() %></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>Оплачено:</span><span class="amount" style="color:var(--success)">₽<%= (order.paid_amount || 0).toLocaleString() %></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>Остаток:</span><span class="amount" style="color:var(--danger)">₽<%= ((order.total_amount || 0) - (order.paid_amount || 0)).toLocaleString() %></span></div>
+  </div>
 </div>
-<div class="form-group"><label class="form-label">Описание</label><textarea name="description" class="form-textarea" placeholder="Основание для выставления счёта...">Заказ-наряд <%= order.order_number %></textarea></div>
-<button type="submit" class="btn btn-primary"><i class="fas fa-file-invoice"></i> Выставить счёт</button>
-</form>
-</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="card-header"><div class="card-title"><i class="fas fa-file-invoice" style="color:var(--secondary);margin-right:8px"></i>Выставить счёт клиенту</div></div>
+  <div class="card-body">
+    <form method="POST" action="/admin/clients/<%= order.client_id %>/invoices">
+      <input type="hidden" name="order_id" value="<%= order.id %>">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Сумма счёта (₽)</label><input type="number" name="amount" class="form-input" value="<%= (order.total_amount || 0) - (order.paid_amount || 0) %>" required></div>
+        <div class="form-group"><label class="form-label">Срок оплаты</label><input type="date" name="due_date" class="form-input" required></div>
+      </div>
+      <div class="form-group"><label class="form-label">Описание</label><textarea name="description" class="form-textarea" placeholder="Основание для выставления счёта...">Заказ-наряд <%= order.order_number %></textarea></div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-file-invoice"></i> Выставить счёт</button>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -109,15 +107,3 @@ function sendOrder(id){
     .catch(e=>alert('Ошибка: '+e));
 }
 </script>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

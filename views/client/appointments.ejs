@@ -1,98 +1,115 @@
-<%- include('../partials/client_layout') %>
-
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:8px"></i>Мои записи</h2>
-<button class="btn btn-primary" onclick="openModal('newAppointment')"><i class="fas fa-plus"></i> Новая запись</button>
+  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:8px"></i>Мои записи</h2>
+  <button class="btn btn-primary" onclick="openModal('newAppointment')"><i class="fas fa-plus"></i> Новая запись</button>
 </div>
 
 <div class="card">
-<div class="card-body" style="padding:0">
-<% if (appointments.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>Дата</th><th>Время</th><th>Услуга</th><th>Автомобиль</th><th>Статус</th><th>Действия</th></tr></thead>
-<tbody>
-<% appointments.forEach(app => { %>
-<tr>
-<td><%= new Date(app.appointment_date).toLocaleDateString('ru-RU') %></td>
-<td><%= app.appointment_time %></td>
-<td><%= app.service_name || 'Мойка / ТО' %></td>
-<td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
-<td>
-<% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
-<% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
-<% } else if (app.status === 'cancelled') { %><span class="status-badge status-cancel">Отменено</span>
-<% } else { %><span class="status-badge status-done">Выполнено</span><% } %>
-</td>
-<td>
-<% if (app.status === 'pending') { %>
-<form method="POST" action="/client/appointments/<%= app.id %>/cancel" style="display:inline"><button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-times"></i> Отменить</button></form>
-<% } %>
-</td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>Нет записей</h3><p>Запишитесь на обслуживание или мойку</p></div>
-<% } %>
-</div>
+  <div class="card-body" style="padding:0">
+    <% if (appointments && appointments.length > 0) { %>
+    <table class="data-table">
+      <thead>
+        <tr><th>Дата</th><th>Время</th><th>Услуга</th><th>Автомобиль</th><th>Статус</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        <% appointments.forEach(app => { %>
+        <tr>
+          <td><%= app.appointment_date ? new Date(app.appointment_date).toLocaleDateString('ru-RU') : '—' %></td>
+          <td><%= app.appointment_time || '—' %></td>
+          <td><%= app.service_name || 'Мойка / ТО' %></td>
+          <td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
+          <td>
+            <% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
+            <% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
+            <% } else if (app.status === 'cancelled') { %><span class="status-badge status-cancel">Отменено</span>
+            <% } else if (app.status === 'completed') { %><span class="status-badge status-done">Выполнено</span>
+            <% } else { %><span class="status-badge status-wait"><%= app.status %></span><% } %>
+          </td>
+          <td>
+            <% if (app.status === 'pending') { %>
+            <form method="POST" action="/client/appointments/<%= app.id %>/cancel" style="display:inline">
+              <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-times"></i> Отменить</button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-calendar-alt"></i>
+      <h3>Нет записей</h3>
+      <p>Запишитесь на обслуживание или мойку</p>
+    </div>
+    <% } %>
+  </div>
 </div>
 
 <div class="modal-overlay" id="newAppointmentModal">
-<div class="modal" style="max-width:500px">
-<div class="modal-header"><div class="modal-title">Новая запись</div><button class="modal-close" onclick="closeModal('newAppointmentModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body">
-<form id="appointmentForm" method="POST" action="/client/appointments">
-<div class="form-group">
-<label class="form-label">Тип записи</label>
-<select name="service_type" class="form-select" onchange="updateServices(this.value)">
-<option value="to">ТО / Ремонт</option>
-<option value="wash">Мойка</option>
-</select>
-</div>
-<div class="form-group">
-<label class="form-label">Автомобиль</label>
-<select name="car_id" class="form-select" required>
-<option value="">— Выберите авто —</option>
-<% cars.forEach(car => { %>
-<option value="<%= car.id %>"><%= car.brand %> <%= car.model %> (<%= car.license_plate || 'без номера' %>)</option>
-<% }) %>
-</select>
-</div>
-<div class="form-group" id="serviceSelect">
-<label class="form-label">Услуга</label>
-<select name="service_id" class="form-select">
-<option value="">— Выберите услугу —</option>
-<% services.forEach(s => { %>
-<option value="<%= s.id %>"><%= s.name %> (₽<%= s.price.toLocaleString() %>)</option>
-<% }) %>
-</select>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label class="form-label">Дата *</label>
-<input type="date" name="appointment_date" class="form-input" required min="<%= new Date().toISOString().split('T')[0] %>">
-</div>
-<div class="form-group">
-<label class="form-label">Время *</label>
-<select name="appointment_time" class="form-select" required>
-<option value="">— Выберите —</option>
-<option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option>
-<option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option>
-<option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option>
-<option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
-<option value="20:00">20:00</option>
-</select>
-</div>
-</div>
-<div class="form-group"><label class="form-label">Комментарий</label><textarea name="notes" class="form-textarea" placeholder="Опишите проблему..."></textarea></div>
-</form>
-</div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal('newAppointmentModal')">Отмена</button>
-<button class="btn btn-primary" onclick="document.getElementById('appointmentForm').submit()"><i class="fas fa-calendar-check"></i> Записаться</button>
-</div>
-</div>
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">Новая запись</div>
+      <button class="modal-close" onclick="closeModal('newAppointmentModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="appointmentForm" method="POST" action="/client/appointments">
+        <div class="form-group">
+          <label class="form-label">Тип записи</label>
+          <select name="service_type" class="form-select" onchange="updateServices(this.value)">
+            <option value="to">ТО / Ремонт</option>
+            <option value="wash">Мойка</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Автомобиль</label>
+          <select name="car_id" class="form-select" required>
+            <option value="">— Выберите авто —</option>
+            <% if (cars && cars.length > 0) { %>
+              <% cars.forEach(car => { %>
+              <option value="<%= car.id %>"><%= car.brand %> <%= car.model %> (<%= car.license_plate || 'без номера' %>)</option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-group" id="serviceSelect">
+          <label class="form-label">Услуга</label>
+          <select name="service_id" class="form-select">
+            <option value="">— Выберите услугу —</option>
+            <% if (services && services.length > 0) { %>
+              <% services.forEach(s => { %>
+              <option value="<%= s.id %>"><%= s.name %> (₽<%= (s.price || 0).toLocaleString() %>)</option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Дата *</label>
+            <input type="date" name="appointment_date" class="form-input" required min="<%= new Date().toISOString().split('T')[0] %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время *</label>
+            <select name="appointment_time" class="form-select" required>
+              <option value="">— Выберите —</option>
+              <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option>
+              <option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option>
+              <option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option>
+              <option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
+              <option value="20:00">20:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Комментарий</label>
+          <textarea name="notes" class="form-textarea" placeholder="Опишите проблему..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('newAppointmentModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="document.getElementById('appointmentForm').submit()"><i class="fas fa-calendar-check"></i> Записаться</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -104,15 +121,3 @@ function updateServices(type){
 }
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
 </script>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

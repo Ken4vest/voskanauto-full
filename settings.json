@@ -1,0 +1,8 @@
+{
+  "javascript.validate.enable": false,
+  "typescript.validate.enable": false,
+  "html.validate.scripts": false,
+  "files.associations": {
+    "*.ejs": "html"
+  }
+}

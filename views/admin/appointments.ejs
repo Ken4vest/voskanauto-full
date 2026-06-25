@@ -1,55 +1,52 @@
-<%- include('../partials/layout') %>
-
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:8px"></i>Записи клиентов</h2>
+  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:8px"></i>Записи клиентов</h2>
 </div>
 
 <div class="card">
-<div class="card-body" style="padding:0">
-<% if (appointments.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>ID</th><th>Клиент</th><th>Телефон</th><th>Тип</th><th>Услуга</th><th>Авто</th><th>Дата</th><th>Время</th><th>Статус</th><th>Действия</th></tr></thead>
-<tbody>
-<% appointments.forEach(app => { %>
-<tr>
-<td><%= app.id %></td>
-<td><div class="client-name"><%= app.client_name %></div></td>
-<td><%= app.client_phone %></td>
-<td><%= app.appointment_type === 'wash' ? 'Мойка' : 'ТО/Ремонт' %></td>
-<td><%= app.service_name || '—' %></td>
-<td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
-<td><%= new Date(app.appointment_date).toLocaleDateString('ru-RU') %></td>
-<td><%= app.appointment_time %></td>
-<td>
-<% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
-<% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
-<% } else if (app.status === 'rejected') { %><span class="status-badge status-cancel">Отклонено</span>
-<% } else { %><span class="status-badge status-done">Выполнено</span><% } %>
-</td>
-<td>
-<% if (app.status === 'pending') { %>
-<form method="POST" action="/admin/appointments/<%= app.id %>/confirm" style="display:inline"><button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button></form>
-<form method="POST" action="/admin/appointments/<%= app.id %>/reject" style="display:inline"><button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button></form>
-<% } %>
-</td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state" style="padding:40px"><i class="fas fa-calendar-alt"></i><h3>Нет записей</h3></div>
-<% } %>
+  <div class="card-body" style="padding:0">
+    <% if (appointments && appointments.length > 0) { %>
+    <table class="data-table">
+      <thead>
+        <tr><th>ID</th><th>Клиент</th><th>Телефон</th><th>Тип</th><th>Услуга</th><th>Авто</th><th>Дата</th><th>Время</th><th>Статус</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        <% appointments.forEach(app => { %>
+        <tr>
+          <td><%= app.id %></td>
+          <td><div class="client-name"><%= app.client_name || '—' %></div></td>
+          <td><%= app.client_phone || '—' %></td>
+          <td><%= app.appointment_type === 'wash' ? 'Мойка' : 'ТО/Ремонт' %></td>
+          <td><%= app.service_name || '—' %></td>
+          <td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
+          <td><%= app.appointment_date ? new Date(app.appointment_date).toLocaleDateString('ru-RU') : '—' %></td>
+          <td><%= app.appointment_time || '—' %></td>
+          <td>
+            <% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
+            <% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
+            <% } else if (app.status === 'rejected') { %><span class="status-badge status-cancel">Отклонено</span>
+            <% } else if (app.status === 'completed') { %><span class="status-badge status-done">Выполнено</span>
+            <% } else { %><span class="status-badge status-wait"><%= app.status %></span><% } %>
+          </td>
+          <td>
+            <% if (app.status === 'pending') { %>
+            <form method="POST" action="/admin/appointments/<%= app.id %>/confirm" style="display:inline">
+              <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+            </form>
+            <form method="POST" action="/admin/appointments/<%= app.id %>/reject" style="display:inline">
+              <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state" style="padding:40px">
+      <i class="fas fa-calendar-alt"></i>
+      <h3>Нет записей</h3>
+      <p>Записи появятся, когда клиенты создадут их через сайт</p>
+    </div>
+    <% } %>
+  </div>
 </div>
-</div>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

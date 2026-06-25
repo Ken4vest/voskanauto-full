@@ -1,87 +1,129 @@
-<%- include('../partials/layout') %>
-
 <div class="card" style="max-width:900px">
-<div class="card-header"><div class="card-title"><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px"></i>Новый заказ-наряд</div></div>
-<div class="card-body">
-<form method="POST" action="/admin/orders">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Клиент *</label><select name="client_id" class="form-select" required onchange="loadCars(this.value)">
-<option value="">— Выберите —</option>
-<% clients.forEach(c => { %>
-<option value="<%= c.id %>"><%= c.full_name %></option>
-<% }) %>
-</select></div>
-<div class="form-group"><label class="form-label">Автомобиль</label><select name="car_id" id="carSelect" class="form-select"><option value="">— Сначала выберите клиента —</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Исполнитель</label><select name="mechanic_id" class="form-select"><option value="">— Не назначен —</option>
-<% mechanics.forEach(m => { %>
-<option value="<%= m.id %>"><%= m.full_name %></option>
-<% }) %>
-</select></div>
-<div class="form-group"><label class="form-label">Пост</label><select name="post_number" class="form-select"><option value="">— Не назначен —</option><option value="1">Пост 1</option><option value="2">Пост 2</option><option value="3">Пост 3</option><option value="4">Пост 4</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Дата</label><input type="date" name="scheduled_date" class="form-input"></div>
-<div class="form-group"><label class="form-label">Время</label><input type="time" name="scheduled_time" class="form-input"></div>
-</div>
-<div class="form-group"><label class="form-label">Описание работ</label><textarea name="description" class="form-textarea"></textarea></div>
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px"></i>
+      Новый заказ-наряд
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="/admin/orders">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Клиент *</label>
+          <select name="client_id" class="form-select" required onchange="loadCars(this.value)">
+            <option value="">— Выберите —</option>
+            <% if (clients && clients.length > 0) { %>
+              <% clients.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.full_name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Автомобиль</label>
+          <select name="car_id" id="carSelect" class="form-select">
+            <option value="">— Сначала выберите клиента —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Исполнитель</label>
+          <select name="mechanic_id" class="form-select">
+            <option value="">— Не назначен —</option>
+            <% if (mechanics && mechanics.length > 0) { %>
+              <% mechanics.forEach(m => { %>
+              <option value="<%= m.id %>"><%= m.full_name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пост</label>
+          <select name="post_number" class="form-select">
+            <option value="">— Не назначен —</option>
+            <option value="1">Пост 1</option>
+            <option value="2">Пост 2</option>
+            <option value="3">Пост 3</option>
+            <option value="4">Пост 4</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Дата</label>
+          <input type="date" name="scheduled_date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Время</label>
+          <input type="time" name="scheduled_time" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Описание работ</label>
+        <textarea name="description" class="form-textarea"></textarea>
+      </div>
 
-<div class="card" style="margin-top:20px;background:var(--gray-light)">
-<div class="card-header"><div class="card-title">Услуги</div></div>
-<div class="card-body">
-<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-<% services.forEach(s => { %>
-<label style="display:flex;align-items:center;gap:8px;padding:8px;background:white;border-radius:8px;cursor:pointer">
-<input type="checkbox" name="services" value="<%= s.id %>">
-<span><%= s.name %> (₽<%= s.price.toLocaleString() %>)</span>
-</label>
-<% }) %>
-</div>
-</div>
-</div>
+      <div class="card" style="margin-top:20px;background:var(--gray-light)">
+        <div class="card-header"><div class="card-title">Услуги</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            <% if (services && services.length > 0) { %>
+              <% services.forEach(s => { %>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px;background:white;border-radius:8px;cursor:pointer">
+                <input type="checkbox" name="services" value="<%= s.id %>">
+                <span><%= s.name %> (₽<%= (s.price || 0).toLocaleString() %>)</span>
+              </label>
+              <% }) %>
+            <% } else { %>
+              <div style="color:var(--gray);padding:16px">Нет доступных услуг</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
 
-<div class="card" style="margin-top:20px;background:var(--gray-light)">
-<div class="card-header"><div class="card-title">Запчасти</div></div>
-<div class="card-body">
-<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-<% parts.forEach(p => { %>
-<label style="display:flex;align-items:center;gap:8px;padding:8px;background:white;border-radius:8px;cursor:pointer">
-<input type="checkbox" name="parts" value="<%= p.id %>">
-<span><%= p.name %> (₽<%= p.sale_price.toLocaleString() %>)</span>
-</label>
-<% }) %>
-</div>
-</div>
-</div>
+      <div class="card" style="margin-top:20px;background:var(--gray-light)">
+        <div class="card-header"><div class="card-title">Запчасти</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            <% if (parts && parts.length > 0) { %>
+              <% parts.forEach(p => { %>
+              <label style="display:flex;align-items:center;gap:8px;padding:8px;background:white;border-radius:8px;cursor:pointer">
+                <input type="checkbox" name="parts" value="<%= p.id %>">
+                <span><%= p.name %> (₽<%= (p.sale_price || 0).toLocaleString() %>)</span>
+              </label>
+              <% }) %>
+            <% } else { %>
+              <div style="color:var(--gray);padding:16px">Нет запчастей на складе</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
 
-<div style="margin-top:24px;display:flex;gap:12px">
-<a href="/admin/orders" class="btn btn-outline">Отмена</a>
-<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Создать заказ-наряд</button>
-</div>
-</form>
-</div>
+      <div style="margin-top:24px;display:flex;gap:12px">
+        <a href="/admin/orders" class="btn btn-outline">Отмена</a>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Создать заказ-наряд</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
 function loadCars(clientId){
-  if(!clientId){document.getElementById('carSelect').innerHTML='<option value="">— Сначала выберите клиента —</option>';return;}
-  fetch('/api/cars/'+clientId).then(r=>r.json()).then(cars=>{
-    let html='<option value="">— Не выбрано —</option>';
-    cars.forEach(c=>html+='<option value="'+c.id+'">'+c.brand+' '+c.model+' ('+(c.license_plate||'без номера')+')</option>');
-    document.getElementById('carSelect').innerHTML=html;
-  });
+  if(!clientId){
+    document.getElementById('carSelect').innerHTML='<option value="">— Сначала выберите клиента —</option>';
+    return;
+  }
+  fetch('/api/cars/'+clientId)
+    .then(r=>r.json())
+    .then(cars=>{
+      let html='<option value="">— Не выбрано —</option>';
+      cars.forEach(c=>html+='<option value="'+c.id+'">'+c.brand+' '+c.model+' ('+(c.license_plate||'без номера')+')</option>');
+      document.getElementById('carSelect').innerHTML=html;
+    })
+    .catch(e=>{
+      console.error('Error loading cars:', e);
+      document.getElementById('carSelect').innerHTML='<option value="">Ошибка загрузки</option>';
+    });
 }
 </script>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

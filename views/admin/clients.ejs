@@ -1,41 +1,55 @@
-<%- include('../partials/layout') %>
-
 <div class="filters-row">
-<input type="text" class="filter-input" placeholder="Поиск по ФИО, телефону...">
-<select class="filter-input"><option>Все типы</option><option>Физ. лицо</option><option>Юр. лицо</option></select>
+  <input type="text" class="filter-input" placeholder="Поиск по ФИО, телефону...">
+  <select class="filter-input">
+    <option>Все типы</option>
+    <option>Физ. лицо</option>
+    <option>Юр. лицо</option>
+  </select>
 </div>
 
 <div class="card">
-<div class="card-header"><div class="card-title">Клиенты</div><div class="card-actions"><button class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Экспорт</button></div></div>
-<div class="card-body" style="padding:0">
-<table class="data-table">
-<thead><tr><th>ID</th><th>Клиент</th><th>Телефон / Email</th><th>Тип</th><th>Заказов</th><th>Скидка</th><th>Баланс</th><th>Действия</th></tr></thead>
-<tbody>
-<% clients.forEach(client => { %>
-<tr>
-<td><strong>C-<%= String(client.id).padStart(3,'0') %></strong></td>
-<td><div class="client-name"><%= client.full_name %></div><div class="client-phone"><%= client.company_name || 'Физ. лицо' %></div></td>
-<td><div class="client-name"><%= client.phone || '—' %></div><div class="client-phone"><%= client.email %></div></td>
-<td><%= client.company_name ? 'Юр. лицо' : 'Физ. лицо' %></td>
-<td>—</td>
-<td><%= client.discount_percent || 0 %>%</td>
-<td><span class="amount" style="color:var(--success)">₽<%= (client.bonus_points || 0).toLocaleString() %></span></td>
-<td><a href="/admin/clients/<%= client.id %>" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
+  <div class="card-header">
+    <div class="card-title">Клиенты</div>
+    <div class="card-actions">
+      <button class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Экспорт</button>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr><th>ID</th><th>Клиент</th><th>Телефон / Email</th><th>Тип</th><th>Заказов</th><th>Скидка</th><th>Баланс</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        <% if (clients && clients.length > 0) { %>
+          <% clients.forEach(client => { %>
+          <tr>
+            <td><strong>C-<%= String(client.id).padStart(3,'0') %></strong></td>
+            <td>
+              <div class="client-name"><%= client.full_name || '—' %></div>
+              <div class="client-phone"><%= client.company_name || 'Физ. лицо' %></div>
+            </td>
+            <td>
+              <div class="client-name"><%= client.phone || '—' %></div>
+              <div class="client-phone"><%= client.email || '—' %></div>
+            </td>
+            <td><%= client.company_name ? 'Юр. лицо' : 'Физ. лицо' %></td>
+            <td>—</td>
+            <td><%= client.discount_percent || 0 %>%</td>
+            <td><span class="amount" style="color:var(--success)">₽<%= (client.bonus_points || 0).toLocaleString() %></span></td>
+            <td>
+              <a href="/admin/clients/<%= client.id %>" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
+            </td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="8" style="text-align:center;padding:24px;color:var(--gray)">
+              <i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>
+              Нет клиентов
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>
-</div>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

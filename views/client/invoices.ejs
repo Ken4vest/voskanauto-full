@@ -1,57 +1,51 @@
-<%- include('../partials/client_layout') %>
-
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-file-invoice" style="color:var(--primary);margin-right:8px"></i>Мои счета</h2>
+  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-file-invoice" style="color:var(--primary);margin-right:8px"></i>Мои счета</h2>
 </div>
 
 <div class="card">
-<div class="card-body" style="padding:0">
-<% if (invoices.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>№ счёта</th><th>Дата</th><th>Описание</th><th>Сумма</th><th>Статус</th><th>Срок</th></tr></thead>
-<tbody>
-<% invoices.forEach(inv => { %>
-  <%
-    let amountColor;
-    if (inv.status === 'pending') {
-      amountColor = 'var(--danger)';
-    } else {
-      amountColor = 'var(--success)';
-    }
-  %>
-<tr>
-<td><strong><%= inv.invoice_number %></strong></td>
-<td><%= new Date(inv.created_at).toLocaleDateString('ru-RU') %></td>
-<td><%= inv.description || '—' %></td>
-<td><span class="amount" data-color="<%= amountColor %>">₽<%= inv.amount.toLocaleString() %></span></td>
-<td>
-<% if (inv.status === 'pending') { %><span class="status-badge status-pending">Не оплачен</span>
-<% } else { %><span class="status-badge status-paid">Оплачен</span><% } %>
-</td>
-<td><%= inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—' %></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Нет счетов</h3><p>Счета будут появляться после оформления заказов</p></div>
-<% } %>
-</div>
+  <div class="card-body" style="padding:0">
+    <% if (invoices && invoices.length > 0) { %>
+    <table class="data-table">
+      <thead>
+        <tr><th>№ счёта</th><th>Дата</th><th>Описание</th><th>Сумма</th><th>Статус</th><th>Срок</th></tr>
+      </thead>
+      <tbody>
+        <% invoices.forEach(inv => { %>
+          <%
+            let amountColor;
+            if (inv.status === 'pending') {
+              amountColor = 'var(--danger)';
+            } else {
+              amountColor = 'var(--success)';
+            }
+          %>
+        <tr>
+          <td><strong><%= inv.invoice_number %></strong></td>
+          <td><%= inv.created_at ? new Date(inv.created_at).toLocaleDateString('ru-RU') : '—' %></td>
+          <td><%= inv.description || '—' %></td>
+          <td><span class="amount" data-color="<%= amountColor %>">₽<%= (inv.amount || 0).toLocaleString() %></span></td>
+          <td>
+            <% if (inv.status === 'pending') { %><span class="status-badge status-pending">Не оплачен</span>
+            <% } else if (inv.status === 'paid') { %><span class="status-badge status-paid">Оплачен</span>
+            <% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
+          </td>
+          <td><%= inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-file-invoice"></i>
+      <h3>Нет счетов</h3>
+      <p>Счета будут появляться после оформления заказов</p>
+    </div>
+    <% } %>
+  </div>
 </div>
 
-</div>
-</main>
-</div>
 <script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-
-// Установка цвета суммы счёта
 document.querySelectorAll('.amount[data-color]').forEach(el => {
   el.style.color = el.dataset.color;
 });
 </script>
-</body>
-</html>

@@ -1,185 +1,181 @@
-<%- include('../partials/client_layout') %>
-
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</h2>
-<button class="btn btn-primary" onclick="openModal('addCar')"><i class="fas fa-plus"></i> Добавить авто</button>
+  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</h2>
+  <button class="btn btn-primary" onclick="window.openModal('addCar')"><i class="fas fa-plus"></i> Добавить авто</button>
 </div>
 
-<% if (cars.length > 0) { %>
+<% if (cars && cars.length > 0) { %>
 <div class="cards-grid">
-<% cars.forEach(car => { %>
-<div class="card">
-<div class="card-header">
-<div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i><%= car.brand %> <%= car.model %></div>
-<div class="card-actions"><span class="car-plate"><%= car.license_plate || '—' %></span></div>
-</div>
-<div class="card-body">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Год выпуска</label><div class="form-input" style="background:var(--gray-light)"><%= car.year || '—' %></div></div>
-<div class="form-group"><label class="form-label">VIN</label><div class="form-input" style="background:var(--gray-light)"><%= car.vin || '—' %></div></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Пробег</label><div class="form-input" style="background:var(--gray-light)"><%= car.mileage ? car.mileage.toLocaleString() + ' км' : '—' %></div></div>
-<div class="form-group"><label class="form-label">Цвет</label><div class="form-input" style="background:var(--gray-light)"><%= car.color || '—' %></div></div>
-</div>
-<div style="margin-top:12px">
-<a href="/client/appointments" class="btn btn-primary btn-sm"><i class="fas fa-calendar-plus"></i> Записать на ТО</a>
-</div>
-</div>
-</div>
-<% }) %>
+  <% cars.forEach(function(car) { %>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i><%= car.brand || '—' %> <%= car.model || '—' %></div>
+      <div class="card-actions"><span class="car-plate"><%= car.license_plate || '—' %></span></div>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Год выпуска</label><div class="form-input" style="background:var(--gray-light)"><%= car.year || '—' %></div></div>
+        <div class="form-group"><label class="form-label">VIN</label><div class="form-input" style="background:var(--gray-light)"><%= car.vin || '—' %></div></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Пробег</label><div class="form-input" style="background:var(--gray-light)"><%= car.mileage ? car.mileage.toLocaleString() + ' км' : '—' %></div></div>
+        <div class="form-group"><label class="form-label">Цвет</label><div class="form-input" style="background:var(--gray-light)"><%= car.color || '—' %></div></div>
+      </div>
+      <div style="margin-top:12px">
+        <a href="/client/appointments" class="btn btn-primary btn-sm"><i class="fas fa-calendar-plus"></i> Записать на ТО</a>
+      </div>
+    </div>
+  </div>
+  <% }) %>
 </div>
 <% } else { %>
-<div class="empty-state"><i class="fas fa-car"></i><h3>Нет автомобилей</h3><p>Добавьте свой первый автомобиль, чтобы записываться на обслуживание</p></div>
+<div class="empty-state">
+  <i class="fas fa-car"></i>
+  <h3>Нет автомобилей</h3>
+  <p>Добавьте свой первый автомобиль, чтобы записываться на обслуживание</p>
+</div>
 <% } %>
 
 <div class="modal-overlay" id="addCarModal">
-<div class="modal" style="max-width:500px">
-<div class="modal-header"><div class="modal-title">Добавить автомобиль</div><button class="modal-close" onclick="closeModal('addCarModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body">
-<form id="addCarForm" method="POST" action="/client/cars">
-  
-  <!-- Марка -->
-  <div class="form-group" style="margin-bottom:12px">
-    <label class="form-label">Марка *</label>
-    <select id="brandSelect" class="form-input" onchange="handleBrandChange(this)">
-      <option value="">Выберите марку</option>
-      <option value="Toyota">Toyota</option>
-      <option value="Honda">Honda</option>
-      <option value="Nissan">Nissan</option>
-      <option value="Mazda">Mazda</option>
-      <option value="Mitsubishi">Mitsubishi</option>
-      <option value="Subaru">Subaru</option>
-      <option value="Lexus">Lexus</option>
-      <option value="BMW">BMW</option>
-      <option value="Mercedes-Benz">Mercedes-Benz</option>
-      <option value="Audi">Audi</option>
-      <option value="Volkswagen">Volkswagen</option>
-      <option value="Skoda">Skoda</option>
-      <option value="Hyundai">Hyundai</option>
-      <option value="Kia">Kia</option>
-      <option value="Ford">Ford</option>
-      <option value="Chevrolet">Chevrolet</option>
-      <option value="Lada">Lada (ВАЗ)</option>
-      <option value="other">Другая (вписать вручную)</option>
-    </select>
-    <input type="text" id="brandInput" name="brand" class="form-input" style="display:none;margin-top:8px" placeholder="Введите марку">
-  </div>
-
-  <!-- Модель -->
-  <div class="form-group" style="margin-bottom:12px">
-    <label class="form-label">Модель *</label>
-    <select id="modelSelect" class="form-input" onchange="handleModelChange(this)">
-      <option value="">Сначала выберите марку</option>
-    </select>
-    <input type="text" id="modelInput" name="model" class="form-input" style="display:none;margin-top:8px" placeholder="Введите модель">
-  </div>
-
-  <div class="form-row">
-    <!-- Год -->
-    <div class="form-group">
-      <label class="form-label">Год</label>
-      <select id="yearSelect" class="form-input" onchange="handleYearChange(this)">
-        <option value="">Выберите год</option>
-      </select>
-      <input type="text" id="yearInput" name="year" class="form-input" style="display:none;margin-top:8px" placeholder="Введите год" maxlength="4">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">Добавить автомобиль</div>
+      <button class="modal-close" onclick="window.closeModal('addCarModal')"><i class="fas fa-times"></i></button>
     </div>
-    
-    <!-- Гос. номер -->
-    <div class="form-group">
-      <label class="form-label">Гос. номер</label>
-      <input type="text" name="license_plate" class="form-input" placeholder="А123БВ 77">
+    <div class="modal-body">
+      <form id="addCarForm" method="POST" action="/client/cars">
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Марка *</label>
+          <select id="brandSelect" class="form-input" onchange="window.handleBrandChange(this)">
+            <option value="">Выберите марку</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Honda">Honda</option>
+            <option value="Nissan">Nissan</option>
+            <option value="Mazda">Mazda</option>
+            <option value="Mitsubishi">Mitsubishi</option>
+            <option value="Subaru">Subaru</option>
+            <option value="Lexus">Lexus</option>
+            <option value="BMW">BMW</option>
+            <option value="Mercedes-Benz">Mercedes-Benz</option>
+            <option value="Audi">Audi</option>
+            <option value="Volkswagen">Volkswagen</option>
+            <option value="Skoda">Skoda</option>
+            <option value="Hyundai">Hyundai</option>
+            <option value="Kia">Kia</option>
+            <option value="Ford">Ford</option>
+            <option value="Chevrolet">Chevrolet</option>
+            <option value="Lada">Lada (ВАЗ)</option>
+            <option value="other">Другая (вписать вручную)</option>
+          </select>
+          <input type="text" id="brandInput" name="brand" class="form-input" style="display:none;margin-top:8px" placeholder="Введите марку">
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Модель *</label>
+          <select id="modelSelect" class="form-input" onchange="window.handleModelChange(this)">
+            <option value="">Сначала выберите марку</option>
+          </select>
+          <input type="text" id="modelInput" name="model" class="form-input" style="display:none;margin-top:8px" placeholder="Введите модель">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Год</label>
+            <select id="yearSelect" class="form-input" onchange="window.handleYearChange(this)">
+              <option value="">Выберите год</option>
+            </select>
+            <input type="text" id="yearInput" name="year" class="form-input" style="display:none;margin-top:8px" placeholder="Введите год" maxlength="4">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Гос. номер</label>
+            <input type="text" name="license_plate" class="form-input" placeholder="А123БВ 77">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">VIN</label>
+            <input type="text" name="vin" class="form-input" placeholder="XTA...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Пробег (км)</label>
+            <input type="number" name="mileage" class="form-input" placeholder="50000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Цвет</label>
+          <select id="colorSelect" class="form-input" onchange="window.handleColorChange(this)">
+            <option value="">Выберите цвет</option>
+            <option value="Чёрный">Чёрный</option>
+            <option value="Белый">Белый</option>
+            <option value="Серебристый">Серебристый</option>
+            <option value="Серый">Серый</option>
+            <option value="Красный">Красный</option>
+            <option value="Синий">Синий</option>
+            <option value="Зелёный">Зелёный</option>
+            <option value="Коричневый">Коричневый</option>
+            <option value="Бежевый">Бежевый</option>
+            <option value="Жёлтый">Жёлтый</option>
+            <option value="Оранжевый">Оранжевый</option>
+            <option value="Фиолетовый">Фиолетовый</option>
+            <option value="Розовый">Розовый</option>
+            <option value="Золотой">Золотой</option>
+            <option value="other">Другой (вписать вручную)</option>
+          </select>
+          <input type="text" id="colorInput" name="color" class="form-input" style="display:none;margin-top:8px" placeholder="Введите цвет">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="window.closeModal('addCarModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="window.submitCarForm()"><i class="fas fa-save"></i> Сохранить</button>
     </div>
   </div>
-
-  <div class="form-row">
-    <!-- VIN -->
-    <div class="form-group">
-      <label class="form-label">VIN</label>
-      <input type="text" name="vin" class="form-input" placeholder="XTA...">
-    </div>
-    
-    <!-- Пробег -->
-    <div class="form-group">
-      <label class="form-label">Пробег (км)</label>
-      <input type="number" name="mileage" class="form-input" placeholder="50000">
-    </div>
-  </div>
-
-  <!-- Цвет -->
-  <div class="form-group">
-    <label class="form-label">Цвет</label>
-    <select id="colorSelect" class="form-input" onchange="handleColorChange(this)">
-      <option value="">Выберите цвет</option>
-      <option value="Чёрный">Чёрный</option>
-      <option value="Белый">Белый</option>
-      <option value="Серебристый">Серебристый</option>
-      <option value="Серый">Серый</option>
-      <option value="Красный">Красный</option>
-      <option value="Синий">Синий</option>
-      <option value="Зелёный">Зелёный</option>
-      <option value="Коричневый">Коричневый</option>
-      <option value="Бежевый">Бежевый</option>
-      <option value="Жёлтый">Жёлтый</option>
-      <option value="Оранжевый">Оранжевый</option>
-      <option value="Фиолетовый">Фиолетовый</option>
-      <option value="Розовый">Розовый</option>
-      <option value="Золотой">Золотой</option>
-      <option value="other">Другой (вписать вручную)</option>
-    </select>
-    <input type="text" id="colorInput" name="color" class="form-input" style="display:none;margin-top:8px" placeholder="Введите цвет">
-  </div>
-
-</form>
-</div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal('addCarModal')">Отмена</button>
-<button class="btn btn-primary" onclick="submitCarForm()"><i class="fas fa-save"></i> Сохранить</button>
-</div>
-</div>
 </div>
 
 <script>
-// Модели по маркам
-const modelsByBrand = {
-  'Toyota': ['Camry', 'Corolla', 'RAV4', 'Land Cruiser', 'Hilux', 'Prius', 'C-HR', 'Highlander'],
-  'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'HR-V', 'Jazz', 'CR-V'],
-  'Nissan': ['Qashqai', 'X-Trail', 'Teana', 'Murano', 'Juke', 'Patrol', 'Navara', 'Almera'],
-  'Mazda': ['3', '6', 'CX-5', 'CX-9', 'CX-30', 'MX-5', 'BT-50'],
-  'Mitsubishi': ['Lancer', 'Outlander', 'Pajero', 'ASX', 'Eclipse Cross', 'L200'],
-  'Subaru': ['Outback', 'Forester', 'Impreza', 'XV', 'Legacy', 'BRZ'],
-  'Lexus': ['RX', 'NX', 'ES', 'LX', 'IS', 'GS', 'UX', 'LC'],
-  'BMW': ['3 Series', '5 Series', '7 Series', 'X3', 'X5', 'X6', 'X7', 'M3', 'M5'],
-  'Mercedes-Benz': ['C-Class', 'E-Class', 'S-Class', 'GLC', 'GLE', 'GLS', 'A-Class', 'G-Class'],
-  'Audi': ['A3', 'A4', 'A6', 'A8', 'Q3', 'Q5', 'Q7', 'Q8', 'TT'],
-  'Volkswagen': ['Golf', 'Polo', 'Passat', 'Tiguan', 'Touareg', 'Jetta', 'Teramont'],
-  'Skoda': ['Octavia', 'Superb', 'Kodiaq', 'Karoq', 'Rapid', 'Fabia'],
-  'Hyundai': ['Solaris', 'Creta', 'Tucson', 'Santa Fe', 'Palisade', 'Sonata', 'Elantra'],
-  'Kia': ['Rio', 'Sportage', 'Sorento', 'Cerato', 'K5', 'Seltos', 'Carnival'],
-  'Ford': ['Focus', 'Mondeo', 'Kuga', 'Explorer', 'Mustang', 'Ranger', 'F-150'],
-  'Chevrolet': ['Cruze', 'Malibu', 'Captiva', 'Tahoe', 'Camaro', 'Traverse'],
-  'Lada': ['Granta', 'Vesta', 'XRAY', 'Largus', 'Niva', 'Priora', 'Kalina']
+window.modelsByBrand = {
+  'Toyota': ['Camry','Corolla','RAV4','Land Cruiser','Hilux','Prius','C-HR','Highlander'],
+  'Honda': ['Civic','Accord','CR-V','Pilot','HR-V','Jazz'],
+  'Nissan': ['Qashqai','X-Trail','Teana','Murano','Juke','Patrol','Navara','Almera'],
+  'Mazda': ['3','6','CX-5','CX-9','CX-30','MX-5','BT-50'],
+  'Mitsubishi': ['Lancer','Outlander','Pajero','ASX','Eclipse Cross','L200'],
+  'Subaru': ['Outback','Forester','Impreza','XV','Legacy','BRZ'],
+  'Lexus': ['RX','NX','ES','LX','IS','GS','UX','LC'],
+  'BMW': ['3 Series','5 Series','7 Series','X3','X5','X6','X7','M3','M5'],
+  'Mercedes-Benz': ['C-Class','E-Class','S-Class','GLC','GLE','GLS','A-Class','G-Class'],
+  'Audi': ['A3','A4','A6','A8','Q3','Q5','Q7','Q8','TT'],
+  'Volkswagen': ['Golf','Polo','Passat','Tiguan','Touareg','Jetta','Teramont'],
+  'Skoda': ['Octavia','Superb','Kodiaq','Karoq','Rapid','Fabia'],
+  'Hyundai': ['Solaris','Creta','Tucson','Santa Fe','Palisade','Sonata','Elantra'],
+  'Kia': ['Rio','Sportage','Sorento','Cerato','K5','Seltos','Carnival'],
+  'Ford': ['Focus','Mondeo','Kuga','Explorer','Mustang','Ranger','F-150'],
+  'Chevrolet': ['Cruze','Malibu','Captiva','Tahoe','Camaro','Traverse'],
+  'Lada': ['Granta','Vesta','XRAY','Largus','Niva','Priora','Kalina']
 };
 
-// Заполнение годов
-const yearSelect = document.getElementById('yearSelect');
-const currentYear = new Date().getFullYear();
-for (let y = currentYear; y >= 1990; y--) {
-  const opt = document.createElement('option');
-  opt.value = y;
-  opt.textContent = y;
-  yearSelect.appendChild(opt);
-}
-const otherYearOpt = document.createElement('option');
-otherYearOpt.value = 'other';
-otherYearOpt.textContent = 'Другой (вписать вручную)';
-yearSelect.appendChild(otherYearOpt);
+document.addEventListener('DOMContentLoaded', function() {
+  var yearSelect = document.getElementById('yearSelect');
+  if (yearSelect) {
+    var currentYear = new Date().getFullYear();
+    for (var y = currentYear; y >= 1990; y--) {
+      var opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+    var otherOpt = document.createElement('option');
+    otherOpt.value = 'other';
+    otherOpt.textContent = 'Другой (вписать вручную)';
+    yearSelect.appendChild(otherOpt);
+  }
+  document.querySelectorAll('.modal-overlay').forEach(function(m) {
+    m.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+  });
+});
 
-function handleBrandChange(select) {
-  const val = select.value;
-  const modelSelect = document.getElementById('modelSelect');
-  const brandInput = document.getElementById('brandInput');
-  
+window.handleBrandChange = function(select) {
+  var val = select.value;
+  var modelSelect = document.getElementById('modelSelect');
+  var brandInput = document.getElementById('brandInput');
   if (val === 'other') {
     brandInput.style.display = 'block';
     brandInput.required = true;
@@ -191,29 +187,26 @@ function handleBrandChange(select) {
     brandInput.required = false;
     brandInput.value = '';
     select.name = 'brand';
-    
-    // Заполнение моделей
     modelSelect.disabled = false;
     modelSelect.innerHTML = '<option value="">Выберите модель</option>';
-    if (modelsByBrand[val]) {
-      modelsByBrand[val].forEach(m => {
-        const opt = document.createElement('option');
+    if (window.modelsByBrand[val]) {
+      window.modelsByBrand[val].forEach(function(m) {
+        var opt = document.createElement('option');
         opt.value = m;
         opt.textContent = m;
         modelSelect.appendChild(opt);
       });
     }
-    const otherOpt = document.createElement('option');
+    var otherOpt = document.createElement('option');
     otherOpt.value = 'other';
     otherOpt.textContent = 'Другая (вписать вручную)';
     modelSelect.appendChild(otherOpt);
   }
-}
+};
 
-function handleModelChange(select) {
-  const val = select.value;
-  const modelInput = document.getElementById('modelInput');
-  
+window.handleModelChange = function(select) {
+  var val = select.value;
+  var modelInput = document.getElementById('modelInput');
   if (val === 'other') {
     modelInput.style.display = 'block';
     modelInput.required = true;
@@ -224,12 +217,11 @@ function handleModelChange(select) {
     modelInput.value = '';
     select.name = 'model';
   }
-}
+};
 
-function handleYearChange(select) {
-  const val = select.value;
-  const yearInput = document.getElementById('yearInput');
-  
+window.handleYearChange = function(select) {
+  var val = select.value;
+  var yearInput = document.getElementById('yearInput');
   if (val === 'other') {
     yearInput.style.display = 'block';
     yearInput.required = true;
@@ -240,12 +232,11 @@ function handleYearChange(select) {
     yearInput.value = '';
     select.name = 'year';
   }
-}
+};
 
-function handleColorChange(select) {
-  const val = select.value;
-  const colorInput = document.getElementById('colorInput');
-  
+window.handleColorChange = function(select) {
+  var val = select.value;
+  var colorInput = document.getElementById('colorInput');
   if (val === 'other') {
     colorInput.style.display = 'block';
     colorInput.required = true;
@@ -256,71 +247,46 @@ function handleColorChange(select) {
     colorInput.value = '';
     select.name = 'color';
   }
-}
+};
 
-function submitCarForm() {
-  const form = document.getElementById('addCarForm');
-  
-  // Проверка марки
-  const brandSelect = document.getElementById('brandSelect');
-  const brandInput = document.getElementById('brandInput');
-  if (brandSelect.value === 'other') {
-    if (!brandInput.value.trim()) {
-      alert('Введите марку автомобиля');
-      brandInput.focus();
-      return;
-    }
+window.submitCarForm = function() {
+  var form = document.getElementById('addCarForm');
+  var brandSelect = document.getElementById('brandSelect');
+  var brandInput = document.getElementById('brandInput');
+  if (brandSelect.value === 'other' && !brandInput.value.trim()) {
+    alert('Введите марку автомобиля');
+    brandInput.focus();
+    return;
   }
-  
-  // Проверка модели
-  const modelSelect = document.getElementById('modelSelect');
-  const modelInput = document.getElementById('modelInput');
-  if (modelSelect.value === 'other') {
-    if (!modelInput.value.trim()) {
-      alert('Введите модель автомобиля');
-      modelInput.focus();
-      return;
-    }
+  var modelSelect = document.getElementById('modelSelect');
+  var modelInput = document.getElementById('modelInput');
+  if (modelSelect.value === 'other' && !modelInput.value.trim()) {
+    alert('Введите модель автомобиля');
+    modelInput.focus();
+    return;
   }
-  
-  // Проверка года
-  const yearSelect = document.getElementById('yearSelect');
-  const yearInput = document.getElementById('yearInput');
-  if (yearSelect.value === 'other') {
-    if (!yearInput.value.trim() || isNaN(yearInput.value)) {
-      alert('Введите корректный год');
-      yearInput.focus();
-      return;
-    }
+  var yearSelect = document.getElementById('yearSelect');
+  var yearInput = document.getElementById('yearInput');
+  if (yearSelect.value === 'other' && (!yearInput.value.trim() || isNaN(yearInput.value))) {
+    alert('Введите корректный год');
+    yearInput.focus();
+    return;
   }
-  
-  // Проверка цвета
-  const colorSelect = document.getElementById('colorSelect');
-  const colorInput = document.getElementById('colorInput');
-  if (colorSelect.value === 'other') {
-    if (!colorInput.value.trim()) {
-      alert('Введите цвет автомобиля');
-      colorInput.focus();
-      return;
-    }
+  var colorSelect = document.getElementById('colorSelect');
+  var colorInput = document.getElementById('colorInput');
+  if (colorSelect.value === 'other' && !colorInput.value.trim()) {
+    alert('Введите цвет автомобиля');
+    colorInput.focus();
+    return;
   }
-  
   form.submit();
-}
+};
 
-function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
-function closeModal(id){document.getElementById(id).classList.remove('active');}
-document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
-</script>
+window.openModal = function(id) {
+  document.getElementById(id + 'Modal').classList.add('active');
+};
 
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
+window.closeModal = function(id) {
+  document.getElementById(id).classList.remove('active');
+};
 </script>
-</body>
-</html>

@@ -1,12 +1,10 @@
-<%- include('../partials/client_layout') %>
-
 <div class="filters-row">
   <h2 style="font-size:20px;font-weight:700"><i class="fas fa-bell" style="color:var(--primary);margin-right:8px"></i>Уведомления</h2>
 </div>
 
 <div class="card">
   <div class="card-body">
-    <% if (notifications.length > 0) { %>
+    <% if (notifications && notifications.length > 0) { %>
       <div class="activity-list">
         <% notifications.forEach(notif => { %>
           <%
@@ -21,6 +19,9 @@
             } else if (notif.type === 'appointment') {
               iconBg = '#d1fae5';
               iconClass = 'calendar-check';
+            } else if (notif.type === 'payment') {
+              iconBg = '#c6f6d5';
+              iconClass = 'credit-card';
             } else {
               iconBg = '#e5e7eb';
               iconClass = 'bell';
@@ -31,27 +32,25 @@
               <i class="fas fa-<%= iconClass %>"></i>
             </div>
             <div class="activity-content">
-              <div class="activity-text"><strong><%= notif.title %></strong></div>
-              <div class="activity-text"><%= notif.message %></div>
-              <div class="activity-time"><%= new Date(notif.created_at).toLocaleString('ru-RU') %></div>
+              <div class="activity-text"><strong><%= notif.title || 'Уведомление' %></strong></div>
+              <div class="activity-text"><%= notif.message || '' %></div>
+              <div class="activity-time"><%= notif.created_at ? new Date(notif.created_at).toLocaleString('ru-RU') : '' %></div>
             </div>
           </div>
         <% }) %>
       </div>
     <% } else { %>
-      <div class="empty-state"><i class="fas fa-bell"></i><h3>Нет уведомлений</h3><p>Здесь будут появляться уведомления о ваших заказах и записи.</p></div>
+      <div class="empty-state">
+        <i class="fas fa-bell"></i>
+        <h3>Нет уведомлений</h3>
+        <p>Здесь будут появляться уведомления о ваших заказах и записи.</p>
+      </div>
     <% } %>
   </div>
 </div>
 
-</div>
-</main>
-
 <script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
+document.querySelectorAll('.activity-icon[data-bg]').forEach(el => {
+  el.style.background = el.dataset.bg;
+});
 </script>
-</body>
-</html>

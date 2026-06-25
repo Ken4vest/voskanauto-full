@@ -1,109 +1,290 @@
-<%- include('../partials/layout') %>
+<div class="page-header">
+  <h1><i class="fas fa-boxes"></i> Склад</h1>
+</div>
 
+<!-- СТАТИСТИКА -->
+<div class="stats-grid" style="margin-bottom:20px;">
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-label">Всего позиций</div>
+      <div class="stat-icon blue"><i class="fas fa-cubes"></i></div>
+    </div>
+    <div class="stat-value" id="totalPartsCount">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-label">Критично</div>
+      <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+    </div>
+    <div class="stat-value" id="criticalCountValue" style="color:var(--danger);">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-label">Мало</div>
+      <div class="stat-icon orange"><i class="fas fa-bell"></i></div>
+    </div>
+    <div class="stat-value" id="lowCountValue" style="color:var(--secondary);">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-label">В наличии</div>
+      <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+    </div>
+    <div class="stat-value" id="okCountValue" style="color:var(--success);">0</div>
+  </div>
+</div>
+
+<!-- ФИЛЬТРЫ -->
 <div class="filters-row">
-<h2 style="font-size:20px;font-weight:700"><i class="fas fa-boxes" style="color:var(--primary);margin-right:8px"></i>Склад</h2>
-<button class="btn btn-primary" onclick="openModal('addPart')"><i class="fas fa-plus"></i> Новая запчасть</button>
+  <input type="text" id="partSearch" class="filter-input" placeholder="Поиск по артикулу или названию...">
+  <select id="categoryFilter" class="filter-input">
+    <option value="all">Все категории</option>
+    <option value="Двигатель">Двигатель</option>
+    <option value="Тормозная система">Тормозная система</option>
+    <option value="Ходовая часть">Ходовая часть</option>
+    <option value="Электрика">Электрика</option>
+    <option value="Кузов">Кузов</option>
+    <option value="Масла и жидкости">Масла и жидкости</option>
+    <option value="Фильтры">Фильтры</option>
+    <option value="Кондиционер">Кондиционер</option>
+  </select>
+  <select id="stockFilter" class="filter-input">
+    <option value="all">Все остатки</option>
+    <option value="critical">Критично</option>
+    <option value="low">Мало</option>
+    <option value="ok">В наличии</option>
+  </select>
+  <button type="button" class="btn btn-primary" onclick="window.openAddPartModal()">
+    <i class="fas fa-plus"></i> Добавить запчасть
+  </button>
 </div>
 
-<% if (criticalParts.length > 0) { %>
-<div class="card" style="margin-bottom:20px;border:2px solid var(--danger)">
-<div class="card-header" style="background:#fee2e2"><div class="card-title" style="color:#991b1b"><i class="fas fa-exclamation-triangle" style="margin-right:8px"></i>Критические остатки</div></div>
-<div class="card-body" style="padding:0">
-<table class="data-table">
-<thead><tr><th>Артикул</th><th>Наименование</th><th>Производитель</th><th>Остаток</th><th>Мин.</th><th>Действия</th></tr></thead>
-<tbody>
-<% criticalParts.forEach(part => { %>
-<tr>
-<td><strong><%= part.article %></strong></td>
-<td><%= part.name %></td>
-<td><%= part.manufacturer %></td>
-<td><span style="color:var(--danger);font-weight:700"><%= part.stock_main %> шт.</span></td>
-<td><%= part.min_stock %> шт.</td>
-<td><form method="POST" action="/admin/warehouse/parts/<%= part.id %>/restock" style="display:inline"><input type="hidden" name="quantity" value="<%= part.min_stock * 2 %>"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-shopping-cart"></i> Заказать</button></form></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-</div>
-</div>
-<% } %>
-
-<div class="warehouse-grid">
-<% parts.forEach(part => { %>
-<div class="warehouse-card">
-<div class="warehouse-card-header">
-<div>
-<div class="warehouse-card-title"><%= part.name %></div>
-<div style="font-size:12px;color:var(--gray);margin-top:4px"><%= part.manufacturer %> | <%= part.category %></div>
-</div>
-<div class="warehouse-card-code"><%= part.article %></div>
-</div>
-<div class="stock-info">
-<div><div class="stock-label">Основной склад</div><div class="stock-value <%= part.stock_main <= part.min_stock ? 'warning' : 'ok' %>"><%= part.stock_main %> шт.</div></div>
-<div><div class="stock-label">Мин. остаток</div><div class="stock-value"><%= part.min_stock %> шт.</div></div>
-</div>
-<div class="stock-info" style="margin-top:8px">
-<div><div class="stock-label">Закупка</div><div class="stock-value">₽<%= part.purchase_price.toLocaleString() %></div></div>
-<div><div class="stock-label">Продажа</div><div class="stock-value" style="color:var(--primary)">₽<%= part.sale_price.toLocaleString() %></div></div>
-</div>
-<div style="margin-top:12px;display:flex;gap:8px">
-<form method="POST" action="/admin/warehouse/parts/<%= part.id %>/restock" style="flex:1"><input type="hidden" name="quantity" value="10"><button type="submit" class="btn btn-outline btn-sm" style="width:100%"><i class="fas fa-plus"></i> +10</button></form>
-</div>
-</div>
-<% }) %>
+<!-- КРИТИЧЕСКИЕ ОСТАТКИ -->
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--danger);margin-right:8px"></i>Критические остатки</div>
+    <div class="card-actions">
+      <span id="criticalBadge" class="badge badge-danger">0 позиций</span>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table" id="criticalTable">
+      <thead>
+        <tr><th>Артикул</th><th>Наименование</th><th>Производитель</th><th>Остаток</th><th>Мин.</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        <% if (criticalParts && criticalParts.length > 0) { %>
+          <% criticalParts.forEach(part => { %>
+          <tr class="critical-row" data-category="<%= part.category || '' %>" data-stock="<%= part.stock_main %>" data-min="<%= part.min_stock %>">
+            <td><strong class="part-article"><%= part.article %></strong></td>
+            <td class="part-name"><%= part.name %></td>
+            <td class="part-manufacturer"><%= part.manufacturer %></td>
+            <td><span style="color:var(--danger);font-weight:700"><%= part.stock_main %> шт.</span></td>
+            <td><%= part.min_stock %> шт.</td>
+            <td>
+              <form method="POST" action="/admin/warehouse/parts/<%= part.id %>/restock" style="display:inline">
+                <input type="hidden" name="quantity" value="<%= part.min_stock * 2 %>">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Пополнить</button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr id="criticalEmpty"><td colspan="6" style="text-align:center;padding:24px;color:var(--gray)"><i class="fas fa-check-circle" style="font-size:24px;margin-bottom:8px;display:block;color:var(--success)"></i>Все запчасти в наличии</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+    <div id="criticalNoResults" style="display:none; padding:24px; text-align:center; color:#6b7280;">
+      <i class="fas fa-check-circle" style="font-size:24px; margin-bottom:8px; display:block; color:var(--success);"></i>
+      Нет критических остатков по выбранным фильтрам
+    </div>
+  </div>
 </div>
 
-<div class="modal-overlay" id="addPartModal">
-<div class="modal" style="max-width:500px">
-<div class="modal-header"><div class="modal-title">Новая запчасть</div><button class="modal-close" onclick="closeModal('addPartModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body">
-<form id="addPartForm" method="POST" action="/admin/warehouse/parts">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Артикул *</label><input type="text" name="article" class="form-input" required></div>
-<div class="form-group"><label class="form-label">Название *</label><input type="text" name="name" class="form-input" required></div>
+<!-- ВСЕ ЗАПЧАСТИ -->
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-warehouse" style="color:var(--primary);margin-right:8px"></i>Все запчасти</div>
+    <div class="card-actions">
+      <span id="partsBadge" class="badge badge-info">0 позиций</span>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table" id="partsTable">
+      <thead>
+        <tr><th>Артикул</th><th>Наименование</th><th>Категория</th><th>Остаток</th><th>Цена закупки</th><th>Цена продажи</th><th>Статус</th></tr>
+      </thead>
+      <tbody>
+        <% if (parts && parts.length > 0) { %>
+          <% parts.forEach(part => { %>
+          <tr class="part-row" data-category="<%= part.category || '' %>" data-stock="<%= part.stock_main %>" data-min="<%= part.min_stock %>">
+            <td><strong class="part-article"><%= part.article %></strong></td>
+            <td class="part-name"><%= part.name %></td>
+            <td class="part-category"><%= part.category %></td>
+            <td><%= part.stock_main %> шт.</td>
+            <td>₽<%= (part.purchase_price || 0).toLocaleString() %></td>
+            <td>₽<%= (part.sale_price || 0).toLocaleString() %></td>
+            <td>
+              <% if (part.stock_main <= part.min_stock) { %><span class="status-badge status-cancel">Критично</span>
+              <% } else if (part.stock_main <= part.min_stock * 2) { %><span class="status-badge status-wait">Мало</span>
+              <% } else { %><span class="status-badge status-ready">В наличии</span><% } %>
+            </td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr id="partsEmpty"><td colspan="7" style="text-align:center;padding:24px;color:var(--gray)"><i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>Нет запчастей на складе</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+    <div id="partsNoResults" style="display:none; padding:40px; text-align:center; color:#6b7280;">
+      <i class="fas fa-search" style="font-size:32px; margin-bottom:12px; display:block;"></i>
+      <p>Запчасти не найдены</p>
+      <button type="button" class="btn btn-outline" onclick="window.resetWarehouseFilters()" style="margin-top:12px;"><i class="fas fa-undo"></i> Сбросить фильтры</button>
+    </div>
+  </div>
 </div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Производитель</label><input type="text" name="manufacturer" class="form-input"></div>
-<div class="form-group"><label class="form-label">Категория *</label><select name="category" class="form-select" required>
-<option value="Масла и жидкости">Масла и жидкости</option>
-<option value="Тормозная система">Тормозная система</option>
-<option value="Фильтры">Фильтры</option>
-<option value="Ходовая часть">Ходовая часть</option>
-<option value="Электрика">Электрика</option>
-<option value="Кузов">Кузов</option>
-</select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Остаток</label><input type="number" name="stock_main" class="form-input" value="0" min="0"></div>
-<div class="form-group"><label class="form-label">Мин. остаток</label><input type="number" name="min_stock" class="form-input" value="5" min="0"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Закупка (₽)</label><input type="number" name="purchase_price" class="form-input" value="0" min="0"></div>
-<div class="form-group"><label class="form-label">Продажа (₽)</label><input type="number" name="sale_price" class="form-input" value="0" min="0"></div>
-</div>
-</form>
-</div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal('addPartModal')">Отмена</button>
-<button class="btn btn-primary" onclick="document.getElementById('addPartForm').submit()"><i class="fas fa-save"></i> Сохранить</button>
-</div>
-</div>
+
+<!-- МОДАЛКА ДОБАВЛЕНИЯ -->
+<div id="addPartModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:#fff; border-radius:12px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; padding:24px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h3 style="margin:0; font-size:20px;">Добавить запчасть</h3>
+      <button type="button" onclick="window.closeAddPartModal()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#6b7280; line-height:1;">&times;</button>
+    </div>
+    <form method="POST" action="/admin/warehouse/parts">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Артикул <span style="color:#ef4444;">*</span></label><input type="text" name="article" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" required></div>
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Наименование <span style="color:#ef4444;">*</span></label><input type="text" name="name" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" required></div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Производитель</label><input type="text" name="manufacturer" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;"></div>
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Категория</label>
+          <select name="category" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; background:#fff;">
+            <option value="Двигатель">Двигатель</option>
+            <option value="Тормозная система">Тормозная система</option>
+            <option value="Ходовая часть">Ходовая часть</option>
+            <option value="Электрика">Электрика</option>
+            <option value="Кузов">Кузов</option>
+            <option value="Масла и жидкости">Масла и жидкости</option>
+            <option value="Фильтры">Фильтры</option>
+            <option value="Кондиционер">Кондиционер</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Остаток</label><input type="number" name="stock_main" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" value="0" min="0"></div>
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Мин. запас</label><input type="number" name="min_stock" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" value="5" min="1"></div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Цена закупки (₽)</label><input type="number" name="purchase_price" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" value="0" step="0.01"></div>
+        <div><label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#374151;">Цена продажи (₽)</label><input type="number" name="sale_price" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;" value="0" step="0.01"></div>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" onclick="window.closeAddPartModal()" style="padding:10px 20px; border:1px solid #d1d5db; background:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500;">Отмена</button>
+        <button type="submit" style="padding:10px 20px; border:none; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:500;"><i class="fas fa-save"></i> Сохранить</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
-function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
-function closeModal(id){document.getElementById(id).classList.remove('active');}
-document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
-</script>
+(function() {
+  window.openAddPartModal = function() { document.getElementById('addPartModal').style.display = 'flex'; };
+  window.closeAddPartModal = function() { document.getElementById('addPartModal').style.display = 'none'; };
 
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
+  var searchInput = document.getElementById('partSearch');
+  var categoryFilter = document.getElementById('categoryFilter');
+  var stockFilter = document.getElementById('stockFilter');
+  var criticalRows = document.querySelectorAll('.critical-row');
+  var partRows = document.querySelectorAll('.part-row');
+  var criticalTable = document.getElementById('criticalTable');
+  var partsTable = document.getElementById('partsTable');
+  var criticalNoResults = document.getElementById('criticalNoResults');
+  var partsNoResults = document.getElementById('partsNoResults');
+
+  function getStockStatus(row) {
+    var stock = parseInt(row.getAttribute('data-stock')) || 0;
+    var min = parseInt(row.getAttribute('data-min')) || 0;
+    if (stock <= min) return 'critical';
+    if (stock <= min * 2) return 'low';
+    return 'ok';
+  }
+
+  function calculateStats() {
+    var total = 0, critical = 0, low = 0, ok = 0;
+    partRows.forEach(function(row) {
+      var stock = parseInt(row.getAttribute('data-stock')) || 0;
+      var min = parseInt(row.getAttribute('data-min')) || 0;
+      total++;
+      if (stock <= min) critical++;
+      else if (stock <= min * 2) low++;
+      else ok++;
+    });
+    document.getElementById('totalPartsCount').textContent = total;
+    document.getElementById('criticalCountValue').textContent = critical;
+    document.getElementById('lowCountValue').textContent = low;
+    document.getElementById('okCountValue').textContent = ok;
+  }
+
+  function filterWarehouse() {
+    var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    var category = categoryFilter ? categoryFilter.value : 'all';
+    var stockStatus = stockFilter ? stockFilter.value : 'all';
+
+    var criticalVisible = 0;
+    criticalRows.forEach(function(row) {
+      var rowCategory = row.getAttribute('data-category') || '';
+      var article = row.querySelector('.part-article').textContent.toLowerCase();
+      var name = row.querySelector('.part-name').textContent.toLowerCase();
+      var manufacturer = row.querySelector('.part-manufacturer').textContent.toLowerCase();
+      var status = getStockStatus(row);
+
+      var matchesSearch = !query || article.includes(query) || name.includes(query) || manufacturer.includes(query);
+      var matchesCategory = category === 'all' || rowCategory === category;
+      var matchesStock = stockStatus === 'all' || stockStatus === status;
+
+      if (matchesSearch && matchesCategory && matchesStock) { row.style.display = ''; criticalVisible++; }
+      else { row.style.display = 'none'; }
+    });
+
+    var partsVisible = 0;
+    partRows.forEach(function(row) {
+      var rowCategory = row.getAttribute('data-category') || '';
+      var article = row.querySelector('.part-article').textContent.toLowerCase();
+      var name = row.querySelector('.part-name').textContent.toLowerCase();
+      var status = getStockStatus(row);
+
+      var matchesSearch = !query || article.includes(query) || name.includes(query);
+      var matchesCategory = category === 'all' || rowCategory === category;
+      var matchesStock = stockStatus === 'all' || stockStatus === status;
+
+      if (matchesSearch && matchesCategory && matchesStock) { row.style.display = ''; partsVisible++; }
+      else { row.style.display = 'none'; }
+    });
+
+    updateVisibility(criticalTable, criticalNoResults, criticalRows.length, criticalVisible);
+    updateVisibility(partsTable, partsNoResults, partRows.length, partsVisible);
+
+    document.getElementById('criticalBadge').textContent = 'Показано: ' + criticalVisible + ' из ' + criticalRows.length;
+    document.getElementById('partsBadge').textContent = 'Показано: ' + partsVisible + ' из ' + partRows.length;
+  }
+
+  function updateVisibility(table, noResults, total, visible) {
+    if (total === 0) return;
+    if (visible === 0) { if (table) table.style.display = 'none'; if (noResults) noResults.style.display = 'block'; }
+    else { if (table) table.style.display = ''; if (noResults) noResults.style.display = 'none'; }
+  }
+
+  window.resetWarehouseFilters = function() {
+    searchInput.value = ''; categoryFilter.value = 'all'; stockFilter.value = 'all';
+    filterWarehouse();
+  };
+
+  if (searchInput) searchInput.addEventListener('input', filterWarehouse);
+  if (categoryFilter) categoryFilter.addEventListener('change', filterWarehouse);
+  if (stockFilter) stockFilter.addEventListener('change', filterWarehouse);
+
+  calculateStats();
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') window.closeAddPartModal(); });
+})();
 </script>
-</body>
-</html>

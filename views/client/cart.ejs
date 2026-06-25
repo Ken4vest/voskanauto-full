@@ -1,58 +1,63 @@
-<%- include('../partials/client_layout') %>
-
 <div class="card" style="margin-bottom:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-shopping-cart" style="color:var(--primary);margin-right:8px"></i>Корзина</div><div class="card-actions">
-<% if (cartItems.length > 0) { %>
-<form method="POST" action="/client/cart/clear" style="display:inline"><button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i> Очистить</button></form>
-<% } %>
-</div></div>
-<div class="card-body" style="padding:0">
-<% if (cartItems.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>Услуга / Товар</th><th>Категория</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Действия</th></tr></thead>
-<tbody>
-<% cartItems.forEach(item => { %>
-<tr>
-<td>
-<% if (item.service_name) { %>
-<div class="client-name"><i class="fas fa-wrench" style="color:var(--primary);margin-right:6px"></i><%= item.service_name %></div>
-<% } else if (item.part_name) { %>
-<div class="client-name"><i class="fas fa-cogs" style="color:var(--secondary);margin-right:6px"></i><%= item.part_name %></div>
-<div style="font-size:11px;color:var(--gray)"><%= item.article %></div>
-<% } %>
-</td>
-<td><%= item.category || 'Запчасти' %></td>
-<td><%= item.quantity %></td>
-<td>₽<%= item.price.toLocaleString() %></td>
-<td><span class="amount">₽<%= item.total.toLocaleString() %></span></td>
-<td><form method="POST" action="/client/cart/remove/<%= item.id %>" style="display:inline"><button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i></button></form></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<div style="padding:20px;border-top:1px solid var(--gray-border)">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div style="font-size:14px;color:var(--gray)">Товаров: <%= cartItems.length %></div>
-<div style="font-size:24px;font-weight:700">Итого: ₽<%= cartTotal.total.toLocaleString() %></div>
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-shopping-cart" style="color:var(--primary);margin-right:8px"></i>Корзина
+    </div>
+    <div class="card-actions">
+      <% if (cartItems && cartItems.length > 0) { %>
+      <form method="POST" action="/client/cart/clear" style="display:inline">
+        <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i> Очистить</button>
+      </form>
+      <% } %>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <% if (cartItems && cartItems.length > 0) { %>
+    <table class="data-table">
+      <thead>
+        <tr><th>Услуга / Товар</th><th>Категория</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        <% cartItems.forEach(item => { %>
+        <tr>
+          <td>
+            <% if (item.service_name) { %>
+            <div class="client-name"><i class="fas fa-wrench" style="color:var(--primary);margin-right:6px"></i><%= item.service_name %></div>
+            <% } else if (item.part_name) { %>
+            <div class="client-name"><i class="fas fa-cogs" style="color:var(--secondary);margin-right:6px"></i><%= item.part_name %></div>
+            <div style="font-size:11px;color:var(--gray)"><%= item.article || '' %></div>
+            <% } else { %>
+            <div class="client-name">—</div>
+            <% } %>
+          </td>
+          <td><%= item.category || 'Запчасти' %></td>
+          <td><%= item.quantity || 1 %></td>
+          <td>₽<%= (item.price || 0).toLocaleString() %></td>
+          <td><span class="amount">₽<%= (item.total || 0).toLocaleString() %></span></td>
+          <td>
+            <form method="POST" action="/client/cart/remove/<%= item.id %>" style="display:inline">
+              <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <div style="padding:20px;border-top:1px solid var(--gray-border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:14px;color:var(--gray)">Товаров: <%= cartItems.length %></div>
+        <div style="font-size:24px;font-weight:700">Итого: ₽<%= (cartTotal && cartTotal.total ? cartTotal.total : 0).toLocaleString() %></div>
+      </div>
+      <div style="margin-top:16px;text-align:right">
+        <a href="/client/checkout" class="btn btn-primary" style="padding:12px 32px;font-size:16px"><i class="fas fa-credit-card"></i> Оформить заказ</a>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-shopping-cart"></i>
+      <h3>Корзина пуста</h3>
+      <p><a href="/client/services">Перейти к услугам</a> или <a href="/client/parts">купить запчасти</a></p>
+    </div>
+    <% } %>
+  </div>
 </div>
-<div style="margin-top:16px;text-align:right">
-<a href="/client/checkout" class="btn btn-primary" style="padding:12px 32px;font-size:16px"><i class="fas fa-credit-card"></i> Оформить заказ</a>
-</div>
-</div>
-<% } else { %>
-<div class="empty-state"><i class="fas fa-shopping-cart"></i><h3>Корзина пуста</h3><p><a href="/client/services">Перейти к услугам</a> или <a href="/client/parts">купить запчасти</a></p></div>
-<% } %>
-</div>
-</div>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

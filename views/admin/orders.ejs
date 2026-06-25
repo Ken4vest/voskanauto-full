@@ -1,78 +1,240 @@
-<%- include('../partials/layout') %>
+<div class="page-header">
+  <h1><i class="fas fa-clipboard-list"></i> Заказ-наряды</h1>
+  <div style="display:flex;gap:12px">
+    <button class="btn btn-outline" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> Экспорт CSV</button>
+    <a href="/admin/orders/create" class="btn btn-primary"><i class="fas fa-plus"></i> Новый заказ-наряд</a>
+  </div>
+</div>
 
-<div class="filters-row">
-<select class="filter-input" onchange="location.href='/admin/orders?status='+this.value">
-<option value="all" <%= status === 'all' ? 'selected' : '' %>>Все статусы</option>
-<option value="created" <%= status === 'created' ? 'selected' : '' %>>Создан</option>
-<option value="in_progress" <%= status === 'in_progress' ? 'selected' : '' %>>В работе</option>
-<option value="waiting_parts" <%= status === 'waiting_parts' ? 'selected' : '' %>>Ожидает запчастей</option>
-<option value="ready" <%= status === 'ready' ? 'selected' : '' %>>Готов</option>
-<option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Выдан</option>
-</select>
-<input type="text" class="filter-input" placeholder="Поиск по номеру, клиенту...">
-<a href="/admin/orders/create" class="btn btn-primary"><i class="fas fa-plus"></i> Новый заказ-наряд</a>
+<!-- РАСШИРЕННЫЕ ФИЛЬТРЫ -->
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-body" style="padding:16px 20px;">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="flex:1; min-width:180px;">
+        <input type="text" id="orderSearch" class="filter-input" placeholder="🔍 Поиск по номеру, клиенту, авто..." onkeyup="filterOrders()">
+      </div>
+      <div style="min-width:160px;">
+        <select id="statusFilter" class="filter-input" onchange="filterOrders()">
+          <option value="all">📋 Все статусы</option>
+          <option value="created">🆕 Создан</option>
+          <option value="in_progress">🔧 В работе</option>
+          <option value="waiting_parts">⏳ Ожидает запчастей</option>
+          <option value="ready">✅ Готов</option>
+          <option value="completed">📦 Выдан</option>
+          <option value="cancelled">❌ Отменён</option>
+        </select>
+      </div>
+      <div style="min-width:140px;">
+        <input type="date" id="dateFrom" class="filter-input" onchange="filterOrders()" style="min-width:140px">
+      </div>
+      <div style="min-width:140px;">
+        <input type="date" id="dateTo" class="filter-input" onchange="filterOrders()" style="min-width:140px">
+      </div>
+      <div style="min-width:120px;">
+        <button type="button" class="btn btn-outline" onclick="resetFilters()" style="width:100%;">
+          <i class="fas fa-undo"></i> Сбросить
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- СТАТИСТИКА ПО ФИЛЬТРУ -->
+<div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+  <div style="background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 20px;flex:1;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--primary)" id="filteredCount">0</div>
+    <div style="font-size:12px;color:var(--gray)">найдено заказов</div>
+  </div>
+  <div style="background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 20px;flex:1;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--success)" id="filteredSum">₽0</div>
+    <div style="font-size:12px;color:var(--gray)">общая сумма</div>
+  </div>
+  <div style="background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius);padding:12px 20px;flex:1;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--secondary)" id="avgSum">₽0</div>
+    <div style="font-size:12px;color:var(--gray)">средний чек</div>
+  </div>
 </div>
 
 <div class="card">
-<div class="card-header"><div class="card-title">Заказ-наряды</div><div class="card-actions"><button class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Экспорт</button></div></div>
-<div class="card-body" style="padding:0">
-<table class="data-table">
-<thead><tr><th>№</th><th>Дата</th><th>Клиент</th><th>Автомобиль</th><th>Работы</th><th>Исполнитель</th><th>Статус</th><th>Сумма</th><th>Действия</th></tr></thead>
-<tbody>
-<% orders.forEach(order => { %>
-<tr>
-<td><a href="/admin/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
-<td><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></td>
-<td><div class="client-name"><%= order.client_name %></div><div class="client-phone"><%= order.client_phone %></div></td>
-<td>
-<% if (order.brand) { %>
-<div class="car-info"><div class="car-avatar"><i class="fas fa-car"></i></div><div class="car-details"><div class="car-model"><%= order.brand %> <%= order.model %></div><div class="car-plate"><%= order.license_plate %></div></div></div>
-<% } else { %>—<% } %>
-</td>
-<td><%= order.description || '—' %></td>
-<td><%= order.mechanic_name || '—' %></td>
-<td>
-<% if (order.status === 'created') { %><span class="status-badge status-created">Создан</span>
-<% } else if (order.status === 'in_progress') { %><span class="status-badge status-work">В работе</span>
-<% } else if (order.status === 'waiting_parts') { %><span class="status-badge status-wait">Ожидает запчастей</span>
-<% } else if (order.status === 'ready') { %><span class="status-badge status-ready">Готов</span>
-<% } else if (order.status === 'completed') { %><span class="status-badge status-done">Выдан</span>
-<% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
-</td>
-<td><span class="amount">₽<%= order.total_amount.toLocaleString() %></span></td>
-<td>
-<a href="/admin/orders/<%= order.id %>" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
-<% if (order.status === 'ready') { %>
-<% if (order.status === 'ready') { %>
-<button class="btn btn-success btn-sm send-order-btn" data-order-id="<%= order.id %>"><i class="fas fa-paper-plane"></i></button>
-<% } %>
-<% } %>
-</td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-</div>
+  <div class="card-header">
+    <div class="card-title">Заказ-наряды</div>
+    <div class="card-actions">
+      <span id="ordersCount" style="font-size:13px; color:#6b7280; margin-right:12px;">Всего: <%= orders.length %></span>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table" id="ordersTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+          <th>№</th>
+          <th>Дата</th>
+          <th>Клиент</th>
+          <th>Автомобиль</th>
+          <th>Работы</th>
+          <th>Исполнитель</th>
+          <th>Статус</th>
+          <th>Сумма</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (orders && orders.length > 0) { %>
+          <% orders.forEach(order => { %>
+          <tr class="order-row" data-status="<%= order.status %>" data-date="<%= order.created_at %>" data-amount="<%= order.total_amount || 0 %>">
+            <td><input type="checkbox" class="order-checkbox" value="<%= order.id %>"></td>
+            <td><a href="/admin/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
+            <td><%= order.created_at ? new Date(order.created_at).toLocaleDateString('ru-RU') : '—' %></td>
+            <td>
+              <div style="font-weight:500;"><%= order.client_name || '—' %></div>
+              <div style="font-size:11px;color:var(--gray);"><%= order.client_phone || '' %></div>
+            </td>
+            <td>
+              <% if (order.brand) { %>
+              <div style="font-size:13px;"><%= order.brand %> <%= order.model %></div>
+              <div style="font-size:11px;color:var(--gray);"><%= order.license_plate %></div>
+              <% } else { %>—<% } %>
+            </td>
+            <td><%= order.description || '—' %></td>
+            <td><%= order.mechanic_name || '—' %></td>
+            <td>
+              <% if (order.status === 'created') { %><span class="status-badge status-created">🆕 Создан</span>
+              <% } else if (order.status === 'in_progress') { %><span class="status-badge status-work">🔧 В работе</span>
+              <% } else if (order.status === 'waiting_parts') { %><span class="status-badge status-wait">⏳ Ожидает запчастей</span>
+              <% } else if (order.status === 'ready') { %><span class="status-badge status-ready">✅ Готов</span>
+              <% } else if (order.status === 'completed') { %><span class="status-badge status-done">📦 Выдан</span>
+              <% } else { %><span class="status-badge status-cancel">❌ Отменён</span><% } %>
+            </td>
+            <td><span style="font-weight:700;">₽<%= (order.total_amount || 0).toLocaleString() %></span></td>
+            <td>
+              <a href="/admin/orders/<%= order.id %>" class="btn btn-outline btn-sm" title="Просмотр"><i class="fas fa-eye"></i></a>
+              <% if (order.status === 'ready') { %>
+              <button type="button" class="btn btn-success btn-sm" onclick="window.sendOrder(<%= order.id %>)" title="Отправить клиенту"><i class="fas fa-paper-plane"></i></button>
+              <% } %>
+              <a href="/admin/orders/<%= order.id %>" class="btn btn-primary btn-sm" title="Редактировать"><i class="fas fa-edit"></i></a>
+            </td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr id="emptyRow">
+            <td colspan="10" style="text-align:center;padding:24px;color:var(--gray)">
+              <i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>
+              Нет заказов
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+    <div id="noResults" style="display:none; padding:40px; text-align:center; color:#6b7280;">
+      <i class="fas fa-search" style="font-size:32px; margin-bottom:12px; display:block;"></i>
+      <p>Заказы не найдены</p>
+      <button type="button" class="btn btn-outline" onclick="resetFilters()" style="margin-top:12px;">Сбросить фильтры</button>
+    </div>
+  </div>
 </div>
 
 <script>
-function sendOrder(id){
-  if(!confirm('Отправить заказ-наряд клиенту?')) return;
-  fetch('/admin/orders/'+id+'/send',{method:'POST'})
-    .then(r=>r.json())
-    .then(data=>{alert(data.message);location.reload();})
-    .catch(e=>alert('Ошибка: '+e));
-}
-</script>
+(function() {
+  window.sendOrder = function(id) {
+    if (!confirm('Отправить заказ-наряд клиенту?')) return;
+    fetch('/admin/orders/' + id + '/send', { method: 'POST' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) { alert(data.message); location.reload(); })
+      .catch(function(e) { alert('Ошибка: ' + e); });
+  };
 
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
+  function filterOrders() {
+    var query = document.getElementById('orderSearch').value.toLowerCase().trim();
+    var status = document.getElementById('statusFilter').value;
+    var dateFrom = document.getElementById('dateFrom').value;
+    var dateTo = document.getElementById('dateTo').value;
+    var rows = document.querySelectorAll('.order-row');
+    var visibleCount = 0;
+    var totalSum = 0;
+
+    rows.forEach(function(row) {
+      var rowStatus = row.getAttribute('data-status');
+      var rowDate = row.getAttribute('data-date');
+      var rowAmount = parseFloat(row.getAttribute('data-amount')) || 0;
+      var rowText = row.textContent.toLowerCase();
+
+      var matchesSearch = !query || rowText.includes(query);
+      var matchesStatus = status === 'all' || rowStatus === status;
+      var matchesDate = true;
+      if (dateFrom && rowDate) {
+        matchesDate = new Date(rowDate) >= new Date(dateFrom);
+      }
+      if (dateTo && rowDate) {
+        matchesDate = matchesDate && new Date(rowDate) <= new Date(dateTo + 'T23:59:59');
+      }
+
+      if (matchesSearch && matchesStatus && matchesDate) {
+        row.style.display = '';
+        visibleCount++;
+        totalSum += rowAmount;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    document.getElementById('filteredCount').textContent = visibleCount;
+    document.getElementById('filteredSum').textContent = '₽' + totalSum.toLocaleString();
+    document.getElementById('avgSum').textContent = '₽' + (visibleCount > 0 ? Math.round(totalSum / visibleCount).toLocaleString() : '0');
+
+    var noResults = document.getElementById('noResults');
+    var table = document.getElementById('ordersTable');
+    if (visibleCount === 0) {
+      if (noResults) noResults.style.display = 'block';
+      if (table) table.style.display = 'none';
+    } else {
+      if (noResults) noResults.style.display = 'none';
+      if (table) table.style.display = '';
+    }
+
+    document.getElementById('ordersCount').textContent = 'Показано: ' + visibleCount + ' из ' + rows.length;
+  }
+
+  window.resetFilters = function() {
+    document.getElementById('orderSearch').value = '';
+    document.getElementById('statusFilter').value = 'all';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    filterOrders();
+  };
+
+  window.toggleSelectAll = function() {
+    var checkboxes = document.querySelectorAll('.order-checkbox');
+    var selectAll = document.getElementById('selectAll');
+    checkboxes.forEach(function(cb) {
+      cb.checked = selectAll.checked;
+    });
+  };
+
+  window.exportToCSV = function() {
+    var rows = document.querySelectorAll('.order-row');
+    var csv = 'Номер,Дата,Клиент,Автомобиль,Статус,Сумма\\n';
+    rows.forEach(function(row) {
+      if (row.style.display !== 'none') {
+        var cells = row.querySelectorAll('td');
+        csv += cells[1].textContent.trim() + ',';
+        csv += cells[2].textContent.trim() + ',';
+        csv += cells[3].textContent.trim().replace(/\\n/g, ' ') + ',';
+        csv += cells[4].textContent.trim().replace(/\\n/g, ' ') + ',';
+        csv += cells[7].textContent.trim() + ',';
+        csv += cells[8].textContent.trim().replace('₽', '').replace(/\\s/g, '') + '\\n';
+      }
+    });
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'orders_' + new Date().toISOString().slice(0, 10) + '.csv';
+    link.click();
+  };
+
+  document.getElementById('orderSearch').addEventListener('input', filterOrders);
+  document.getElementById('statusFilter').addEventListener('change', filterOrders);
+
+  // Инициализация
+  filterOrders();
+})();
 </script>
-</body>
-</html>

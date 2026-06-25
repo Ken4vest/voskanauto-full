@@ -3,229 +3,167 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= typeof title !== 'undefined' ? title : 'Личный кабинет — ВосканАвто' %></title>
+<title><%= typeof title !== 'undefined' ? title : 'Личный кабинет' %> — ВосканАвто</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--secondary:#f59e0b;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--dark:#1e293b;--gray:#64748b;--gray-light:#f1f5f9;--gray-border:#e2e8f0;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);--radius:12px;--radius-sm:8px}
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--success:#10b981;--danger:#ef4444;--gray:#64748b;--gray-light:#f1f5f9;--gray-border:#e2e8f0;--dark:#1e293b;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,0.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1);--radius:12px;--radius-sm:8px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#f8fafc;color:var(--dark);line-height:1.6;overflow-x:hidden}
-.app-container{display:flex;min-height:100vh}
-.sidebar{width:260px;background:var(--white);border-right:1px solid var(--gray-border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;transition:transform .3s ease}
-.sidebar-header{padding:20px;border-bottom:1px solid var(--gray-border);display:flex;align-items:center;gap:12px}
-.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:white;font-size:18px}
-.logo-text{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo-sub{font-size:11px;color:var(--gray);font-weight:500}
-.nav-menu{flex:1;padding:16px 12px;overflow-y:auto}
-.nav-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);padding:16px 12px 8px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;color:var(--dark);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px}
-.nav-item:hover{background:var(--gray-light)}
-.nav-item.active{background:var(--primary-light);color:var(--primary)}
-.nav-item i{width:20px;text-align:center;font-size:16px}
-.nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600}
-.sidebar-footer{padding:16px;border-top:1px solid var(--gray-border)}
-.user-card{display:flex;align-items:center;gap:10px}
-.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:14px}
-.user-info{flex:1}
-.user-name{font-size:13px;font-weight:600}
-.user-role{font-size:11px;color:var(--gray)}
-.main-content{flex:1;margin-left:260px;display:flex;flex-direction:column}
-.top-bar{height:64px;background:var(--white);border-bottom:1px solid var(--gray-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
-.top-bar-left{display:flex;align-items:center;gap:16px}
-.menu-toggle{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--dark)}
-.page-title{font-size:20px;font-weight:700}
-.breadcrumbs{font-size:13px;color:var(--gray)}
-.top-bar-right{display:flex;align-items:center;gap:16px}
-.top-btn{width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--gray-border);background:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .2s;text-decoration:none;color:var(--dark)}
-.top-btn:hover{background:var(--gray-light)}
-.top-btn .dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--white)}
-.content-area{flex:1;padding:24px;overflow-y:auto}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:24px}
-.stat-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--gray-border);transition:transform .2s,box-shadow .2s}
-.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.stat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.stat-label{font-size:13px;color:var(--gray);font-weight:500}
-.stat-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px}
-.stat-icon.blue{background:#dbeafe;color:var(--primary)}
-.stat-icon.green{background:#d1fae5;color:var(--success)}
-.stat-icon.orange{background:#fef3c7;color:var(--secondary)}
-.stat-icon.red{background:#fee2e2;color:var(--danger)}
-.stat-value{font-size:28px;font-weight:700;margin-bottom:4px}
-.stat-change{font-size:12px;font-weight:500;display:flex;align-items:center;gap:4px}
-.stat-change.up{color:var(--success)}
-.stat-change.down{color:var(--danger)}
-.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);overflow:hidden}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-height:1.6}
+.client-header{height:64px;background:var(--white);border-bottom:1px solid var(--gray-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.client-header-left{display:flex;align-items:center;gap:16px}
+.client-logo{font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-dark));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.client-nav{display:flex;gap:4px}
+.client-nav a{padding:8px 16px;border-radius:var(--radius-sm);text-decoration:none;color:var(--gray);font-size:14px;font-weight:500;transition:all .2s}
+.client-nav a:hover{color:var(--dark);background:var(--gray-light)}
+.client-nav a.active{color:var(--primary);background:var(--primary-light)}
+.client-header-right{display:flex;align-items:center;gap:12px}
+.client-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px}
+.client-content{max-width:1200px;margin:0 auto;padding:24px}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);overflow:hidden;margin-bottom:20px}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
 .card-title{font-size:16px;font-weight:600}
-.card-actions{display:flex;gap:8px}
+.card-body{padding:20px}
 .btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
 .btn-primary{background:var(--primary);color:white}
 .btn-primary:hover{background:var(--primary-dark)}
 .btn-outline{background:transparent;border:1px solid var(--gray-border);color:var(--dark)}
 .btn-outline:hover{background:var(--gray-light)}
-.btn-success{background:var(--success);color:white}
-.btn-success:hover{background:#059669}
-.btn-danger{background:var(--danger);color:white}
-.btn-danger:hover{background:#dc2626}
 .btn-sm{padding:6px 12px;font-size:12px}
-.card-body{padding:16px 20px}
 .data-table{width:100%;border-collapse:collapse}
 .data-table th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);border-bottom:1px solid var(--gray-border);background:var(--gray-light)}
 .data-table td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--gray-border);vertical-align:middle}
-.data-table tr:hover td{background:#f8fafc}
-.data-table tr:last-child td{border-bottom:none}
-.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.status-badge::before{content:'';width:6px;height:6px;border-radius:50%}
-.status-created{background:#e0e7ff;color:#4338ca}
-.status-created::before{background:#4338ca}
-.status-work{background:#dbeafe;color:#1d4ed8}
-.status-work::before{background:#1d4ed8}
-.status-wait{background:#fef3c7;color:#92400e}
-.status-wait::before{background:#92400e}
-.status-ready{background:#d1fae5;color:#065f46}
-.status-ready::before{background:#065f46}
-.status-done{background:#f3f4f6;color:#374151}
-.status-done::before{background:#374151}
-.status-cancel{background:#fee2e2;color:#991b1b}
-.status-cancel::before{background:#991b1b}
-.status-pending{background:#fef3c7;color:#92400e}
-.status-pending::before{background:#92400e}
-.status-confirmed{background:#d1fae5;color:#065f46}
-.status-confirmed::before{background:#065f46}
-.status-paid{background:#dbeafe;color:#1d4ed8}
-.status-paid::before{background:#1d4ed8}
-.car-info{display:flex;align-items:center;gap:10px}
-.car-avatar{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:14px}
-.car-details{line-height:1.3}
-.car-model{font-weight:600;font-size:13px}
-.car-plate{font-size:11px;color:var(--gray);background:var(--gray-light);padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px}
-.client-name{font-weight:600}
-.client-phone{font-size:11px;color:var(--gray)}
-.amount{font-weight:700;font-size:14px}
-.filters-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.filter-input{padding:8px 12px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:13px;outline:none;min-width:180px}
-.filter-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
-.form-group{margin-bottom:16px}
-.form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--dark)}
-.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:all .2s}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
-.form-textarea{resize:vertical;min-height:80px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.pagination{display:flex;justify-content:center;gap:4px;margin-top:16px}
-.page-btn{padding:6px 12px;border:1px solid var(--gray-border);background:var(--white);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;transition:all .2s}
-.page-btn:hover{background:var(--gray-light)}
-.page-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px)}
-.modal-overlay.active{display:flex}
-.modal{background:var(--white);border-radius:var(--radius);width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .3s ease}
-@keyframes modalIn{from{opacity:0;transform:translateY(-20px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
-.modal-header{padding:20px;border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
-.modal-title{font-size:18px;font-weight:700}
-.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);transition:all .2s}
-.modal-close:hover{background:var(--gray-light);color:var(--dark)}
-.modal-body{padding:20px}
-.modal-footer{padding:16px 20px;border-top:1px solid var(--gray-border);display:flex;justify-content:flex-end;gap:10px}
-.toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--dark);color:white;padding:12px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;box-shadow:var(--shadow-lg)}
-@keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.toast.success{background:var(--success)}
-.toast.error{background:var(--danger)}
-.toast.info{background:var(--info)}
-.activity-list{display:flex;flex-direction:column;gap:12px}
-.activity-item{display:flex;gap:12px;align-items:flex-start}
-.activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.activity-content{flex:1}
-.activity-text{font-size:13px}
-.activity-time{font-size:11px;color:var(--gray);margin-top:2px}
-.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.service-card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius);padding:20px;transition:all .2s;cursor:pointer}
-.service-card:hover{border-color:var(--primary);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.service-card{background:var(--white);border:1px solid var(--gray-border);border-radius:var(--radius);padding:16px;transition:all .2s;position:relative}
+.service-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
 .service-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.service-card-title{font-size:16px;font-weight:600}
-.service-card-price{font-size:20px;font-weight:700;color:var(--primary)}
-.service-card-desc{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:12px}
+.service-card-title{font-size:14px;font-weight:600}
+.service-card-price{font-size:16px;font-weight:700;color:var(--primary)}
+.service-card-desc{font-size:12px;color:var(--gray);margin-bottom:12px}
 .service-card-footer{display:flex;justify-content:space-between;align-items:center}
 .service-card-time{font-size:12px;color:var(--gray)}
-.cart-sidebar{width:360px;background:var(--white);border-left:1px solid var(--gray-border);position:fixed;right:0;top:0;height:100vh;z-index:150;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column}
-.cart-sidebar.open{transform:translateX(0)}
-.cart-header{padding:20px;border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
-.cart-title{font-size:18px;font-weight:700}
-.cart-body{flex:1;overflow-y:auto;padding:16px}
-.cart-footer{padding:16px;border-top:1px solid var(--gray-border)}
-.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-border)}
-.cart-item:last-child{border-bottom:none}
-.cart-item-info{flex:1}
-.cart-item-name{font-size:13px;font-weight:600}
-.cart-item-price{font-size:12px;color:var(--gray)}
-.cart-total{display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:16px;font-weight:700}
-.wash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.wash-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);overflow:hidden;transition:all .2s}
-.wash-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.wash-card-image{height:180px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-size:48px}
-.wash-card-body{padding:20px}
-.wash-card-title{font-size:18px;font-weight:700;margin-bottom:8px}
-.wash-card-desc{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:16px}
-.wash-card-price{font-size:24px;font-weight:700;color:var(--primary);margin-bottom:12px}
-.wash-card-features{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.wash-feature{display:flex;align-items:center;gap:8px;font-size:13px}
-.wash-feature i{color:var(--success);font-size:12px}
-.brand-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.brand-tag{background:var(--gray-light);padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;text-align:center;transition:all .2s;cursor:pointer}
-.brand-tag:hover{background:var(--primary-light);color:var(--primary)}
+.filters-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.filter-input{padding:10px 14px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;outline:none;min-width:200px}
+.filter-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--gray-light);color:var(--gray)}
+.badge-info{background:#dbeafe;color:#1d4ed8}
+.badge-success{background:#d1fae5;color:#065f46}
+.badge-warning{background:#fef3c7;color:#92400e}
+.badge-danger{background:#fee2e2;color:#991b1b}
 .empty-state{text-align:center;padding:40px;color:var(--gray)}
 .empty-state i{font-size:48px;margin-bottom:12px;opacity:.3}
-.empty-state h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--dark)}
-.empty-state p{font-size:13px}
-.sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:99}
-.sidebar-overlay.active{display:block}
-@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.cards-grid{grid-template-columns:1fr}.service-grid{grid-template-columns:repeat(2,1fr)}.wash-grid{grid-template-columns:1fr}.brand-grid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.menu-toggle{display:flex}.stats-grid{grid-template-columns:1fr}.service-grid{grid-template-columns:1fr}.brand-grid{grid-template-columns:repeat(3,1fr)}.form-row{grid-template-columns:1fr}.filters-row{flex-direction:column}.filter-input{width:100%}.cart-sidebar{width:100%}}
+
+/* ЧАТ-ВИДЖЕТ */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:1000}
+.chat-button{width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.4);font-size:24px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-button:hover{background:var(--primary-dark);transform:scale(1.1)}
+.chat-window{position:fixed;bottom:100px;right:24px;width:360px;height:480px;background:#fff;border-radius:var(--radius);box-shadow:0 10px 40px rgba(0,0,0,0.2);display:none;flex-direction:column;overflow:hidden;z-index:1001}
+.chat-window.active{display:flex}
+.chat-header{background:var(--primary);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.chat-header-title{font-weight:600;font-size:14px}
+.chat-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+.chat-messages{flex:1;padding:16px;overflow-y:auto;background:#f8fafc}
+.chat-message{margin-bottom:12px;max-width:80%}
+.chat-message.sent{margin-left:auto}
+.chat-message-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.4}
+.chat-message.sent .chat-message-bubble{background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+.chat-message.received .chat-message-bubble{background:#fff;border:1px solid var(--gray-border);color:var(--dark);border-bottom-left-radius:4px}
+.chat-message-time{font-size:10px;color:var(--gray);margin-top:4px;text-align:right}
+.chat-input-area{padding:12px;border-top:1px solid var(--gray-border);display:flex;gap:8px;background:#fff}
+.chat-input{flex:1;padding:10px 14px;border:1px solid var(--gray-border);border-radius:20px;font-size:13px;outline:none}
+.chat-input:focus{border-color:var(--primary)}
+.chat-send-btn{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.chat-send-btn:hover{background:var(--primary-dark)}
+
+@media(max-width:768px){.client-nav{display:none}.service-grid{grid-template-columns:1fr}.chat-window{width:calc(100vw - 48px);right:24px}}
 </style>
 </head>
 <body>
-<div class="app-container">
-<aside class="sidebar" id="sidebar">
-<div class="sidebar-header">
-<div class="logo-icon"><i class="fas fa-car"></i></div>
-<div><div class="logo-text">ВосканАвто</div><div class="logo-sub">Личный кабинет</div></div>
+<header class="client-header">
+  <div class="client-header-left">
+    <div class="client-logo"><i class="fas fa-car"></i> ВосканАвто</div>
+    <nav class="client-nav">
+      <a href="/client/dashboard" class="<%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>"><i class="fas fa-home"></i> Главная</a>
+      <a href="/client/cars" class="<%= (typeof activePage !== 'undefined' && activePage === 'cars') ? 'active' : '' %>"><i class="fas fa-car"></i> Авто</a>
+      <a href="/client/services" class="<%= (typeof activePage !== 'undefined' && activePage === 'services') ? 'active' : '' %>"><i class="fas fa-wrench"></i> Услуги</a>
+      <a href="/client/orders" class="<%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'active' : '' %>"><i class="fas fa-clipboard-list"></i> Заказы</a>
+      <a href="/client/appointments" class="<%= (typeof activePage !== 'undefined' && activePage === 'appointments') ? 'active' : '' %>"><i class="fas fa-calendar"></i> Записи</a>
+      <a href="/client/cart" class="<%= (typeof activePage !== 'undefined' && activePage === 'cart') ? 'active' : '' %>"><i class="fas fa-shopping-cart"></i> Корзина</a>
+      <a href="/client/profile" class="<%= (typeof activePage !== 'undefined' && activePage === 'profile') ? 'active' : '' %>"><i class="fas fa-user"></i> Профиль</a>
+    </nav>
+  </div>
+  <div class="client-header-right">
+    <a href="/client/notifications" style="color:var(--gray);text-decoration:none;position:relative"><i class="fas fa-bell"></i></a>
+    <a href="/logout" style="color:var(--gray);text-decoration:none"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+</header>
+<div class="client-content">
+  <%- body %>
 </div>
-<nav class="nav-menu">
-<div class="nav-section">Мой автомобиль</div>
-<a href="/client/dashboard" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>"><i class="fas fa-chart-line"></i><span>Главная</span></a>
-<a href="/client/cars" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'cars') ? 'active' : '' %>"><i class="fas fa-car"></i><span>Мои авто</span></a>
-<a href="/client/orders" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'active' : '' %>"><i class="fas fa-clipboard-list"></i><span>Заказ-наряды</span></a>
-<a href="/client/appointments" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'appointments') ? 'active' : '' %>"><i class="fas fa-calendar-alt"></i><span>Записи на ТО</span></a>
-<div class="nav-section">Услуги</div>
-<a href="/client/services" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'services') ? 'active' : '' %>"><i class="fas fa-wrench"></i><span>Ремонт и ТО</span></a>
-<a href="/client/wash" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'wash') ? 'active' : '' %>"><i class="fas fa-soap"></i><span>Автомойка</span></a>
-<a href="/client/parts" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'parts') ? 'active' : '' %>"><i class="fas fa-cogs"></i><span>Запчасти</span></a>
-<div class="nav-section">Финансы</div>
-<a href="/client/invoices" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'invoices') ? 'active' : '' %>"><i class="fas fa-file-invoice"></i><span>Счета</span><span class="nav-badge" id="invoiceBadge" style="display:none">0</span></a>
-<a href="/client/cart" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'cart') ? 'active' : '' %>"><i class="fas fa-shopping-cart"></i><span>Корзина</span><span class="nav-badge" id="cartBadge" style="display:none">0</span></a>
-<div class="nav-section">Профиль</div>
-<a href="/client/profile" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'profile') ? 'active' : '' %>"><i class="fas fa-user"></i><span>Мой профиль</span></a>
-<a href="/client/notifications" class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'notifications') ? 'active' : '' %>"><i class="fas fa-bell"></i><span>Уведомления</span><span class="nav-badge" id="notifBadge" style="display:none">0</span></a>
-</nav>
-<div class="sidebar-footer">
-<div class="user-card">
-<div class="user-avatar"><%= user.full_name.split(' ').map(n=>n[0]).join('').substring(0,2) %></div>
-<div class="user-info"><div class="user-name"><%= user.full_name %></div><div class="user-role">Клиент</div></div>
+
+<!-- ЧАТ-ВИДЖЕТ -->
+<div class="chat-widget">
+  <button class="chat-button" onclick="toggleChat()" id="chatToggleBtn">
+    <i class="fas fa-comment-dots"></i>
+  </button>
 </div>
-<a href="/logout" style="display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--gray);text-decoration:none"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-title"><i class="fas fa-headset"></i> Поддержка ВосканАвто</div>
+    <button class="chat-close" onclick="toggleChat()">&times;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-message received">
+      <div class="chat-message-bubble">👋 Здравствуйте! Чем могу помочь?</div>
+      <div class="chat-message-time">Сейчас</div>
+    </div>
+  </div>
+  <div class="chat-input-area">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter')sendChatMessage()">
+    <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+  </div>
 </div>
-</aside>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<main class="main-content">
-<div class="top-bar">
-<div class="top-bar-left">
-<button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-<div><div class="page-title" id="pageTitle"><%= typeof title !== 'undefined' ? title : 'Личный кабинет' %></div><div class="breadcrumbs" id="breadcrumbs"><%= typeof breadcrumbs !== 'undefined' ? breadcrumbs : 'Главная' %></div></div>
-</div>
-<div class="top-bar-right">
-<button class="top-btn" onclick="toggleCart()" title="Корзина"><i class="fas fa-shopping-cart"></i><span class="dot" id="cartDot" style="display:none"></span></button>
-<a href="/client/notifications" class="top-btn" title="Уведомления"><i class="fas fa-bell"></i><span class="dot" id="notifDot" style="display:none"></span></a>
-<a href="/" class="top-btn" title="На сайт"><i class="fas fa-home"></i></a>
-</div>
-</div>
-<div class="content-area" id="contentArea">
+
+<script>
+function toggleChat() {
+  document.getElementById('chatWindow').classList.toggle('active');
+  if (document.getElementById('chatWindow').classList.contains('active')) {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function sendChatMessage() {
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text) return;
+
+  var messages = document.getElementById('chatMessages');
+  var time = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+
+  // Сообщение пользователя
+  messages.innerHTML += '<div class="chat-message sent"><div class="chat-message-bubble">' + escapeHtml(text) + '</div><div class="chat-message-time">' + time + '</div></div>';
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+
+  // Автоответ бота (имитация)
+  setTimeout(function() {
+    var responses = [
+      'Спасибо за обращение! Наш менеджер скоро ответит.',
+      'Вы можете записаться на сервис через раздел "Услуги".',
+      'Статус вашего заказа можно проверить в разделе "Заказы".',
+      'Работаем с 9:00 до 21:00, без выходных.'
+    ];
+    var response = responses[Math.floor(Math.random() * responses.length)];
+    messages.innerHTML += '<div class="chat-message received"><div class="chat-message-bubble">' + response + '</div><div class="chat-message-time">' + new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}) + '</div></div>';
+    messages.scrollTop = messages.scrollHeight;
+  }, 1000 + Math.random() * 2000);
+}
+
+function escapeHtml(text) {
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

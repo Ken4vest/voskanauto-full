@@ -1,119 +1,184 @@
-<%- include('../partials/layout') %>
-
-<div class="cards-grid">
 <div class="card">
-<div class="card-header"><div class="card-title"><i class="fas fa-user" style="color:var(--primary);margin-right:8px"></i>Карточка клиента</div></div>
-<div class="card-body">
-<div class="form-row">
-<div class="form-group"><label class="form-label">ФИО</label><div class="form-input" style="background:var(--gray-light)"><%= client.full_name %></div></div>
-<div class="form-group"><label class="form-label">Email</label><div class="form-input" style="background:var(--gray-light)"><%= client.email %></div></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Телефон</label><div class="form-input" style="background:var(--gray-light)"><%= client.phone || '—' %></div></div>
-<div class="form-group"><label class="form-label">Скидка</label><div class="form-input" style="background:var(--gray-light)"><%= client.discount_percent || 0 %>%</div></div>
-</div>
-<% if (client.company_name) { %>
-<div class="form-group"><label class="form-label">Компания</label><div class="form-input" style="background:var(--gray-light)"><%= client.company_name %> (ИНН: <%= client.inn || '—' %>, КПП: <%= client.kpp || '—' %>)</div></div>
-<% } %>
-</div>
-</div>
-
-<div class="card">
-<div class="card-header"><div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Автомобили</div></div>
-<div class="card-body" style="padding:0">
-<% if (cars.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>Марка</th><th>Модель</th><th>Год</th><th>Гос. номер</th><th>VIN</th></tr></thead>
-<tbody>
-<% cars.forEach(car => { %>
-<tr><td><%= car.brand %></td><td><%= car.model %></td><td><%= car.year || '—' %></td><td><span class="car-plate"><%= car.license_plate || '—' %></span></td><td><%= car.vin || '—' %></td></tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state" style="padding:24px"><i class="fas fa-car"></i><h3>Нет автомобилей</h3></div>
-<% } %>
-</div>
-</div>
-</div>
-
-<div class="card" style="margin-top:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-clipboard-list" style="color:var(--primary);margin-right:8px"></i>Заказ-наряды</div></div>
-<div class="card-body" style="padding:0">
-<% if (orders.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>№</th><th>Дата</th><th>Статус</th><th>Сумма</th><th>Оплачено</th></tr></thead>
-<tbody>
-<% orders.forEach(order => { %>
-<tr>
-<td><a href="/admin/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
-<td><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></td>
-<td>
-<% if (order.status === 'created') { %><span class="status-badge status-created">Создан</span>
-<% } else if (order.status === 'in_progress') { %><span class="status-badge status-work">В работе</span>
-<% } else if (order.status === 'waiting_parts') { %><span class="status-badge status-wait">Ожидает запчастей</span>
-<% } else if (order.status === 'ready') { %><span class="status-badge status-ready">Готов</span>
-<% } else if (order.status === 'completed') { %><span class="status-badge status-done">Выдан</span>
-<% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
-</td>
-<td><span class="amount">₽<%= order.total_amount.toLocaleString() %></span></td>
-<td><span class="amount" style="color:var(--success)">₽<%= order.paid_amount.toLocaleString() %></span></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state" style="padding:24px"><i class="fas fa-clipboard-list"></i><h3>Нет заказов</h3></div>
-<% } %>
-</div>
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-user" style="color:var(--primary);margin-right:8px"></i>
+      Карточка клиента: <%= client.full_name %>
+    </div>
+    <div class="card-actions">
+      <a href="/admin/clients" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Назад</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">ФИО</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.full_name %></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Email</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.email %></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">Телефон</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.phone || '—' %></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Компания</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.company_name || '—' %></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">ИНН</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.inn || '—' %></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">КПП</div>
+        <div class="form-input" style="background:var(--gray-light)"><%= client.kpp || '—' %></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="card" style="margin-top:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-file-invoice" style="color:var(--secondary);margin-right:8px"></i>Выставить счёт</div></div>
-<div class="card-body">
-<form method="POST" action="/admin/clients/<%= client.id %>/invoices">
-<div class="form-row">
-<div class="form-group"><label class="form-label">Сумма (₽) *</label><input type="number" name="amount" class="form-input" placeholder="0" required></div>
-<div class="form-group"><label class="form-label">Срок оплаты</label><input type="date" name="due_date" class="form-input"></div>
-</div>
-<div class="form-group"><label class="form-label">Описание</label><textarea name="description" class="form-textarea" placeholder="Основание для выставления счёта..."></textarea></div>
-<button type="submit" class="btn btn-primary"><i class="fas fa-file-invoice"></i> Выставить счёт</button>
-</form>
-</div>
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-car" style="color:var(--success);margin-right:8px"></i>
+      Автомобили
+    </div>
+    <div class="card-actions">
+      <span class="btn btn-outline btn-sm"><%= cars.length %> авто</span>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr><th>Марка</th><th>Модель</th><th>VIN</th><th>Гос. номер</th><th>Год</th></tr>
+      </thead>
+      <tbody>
+        <% if (cars && cars.length > 0) { %>
+          <% cars.forEach(car => { %>
+          <tr>
+            <td><%= car.brand %></td>
+            <td><%= car.model %></td>
+            <td><%= car.vin || '—' %></td>
+            <td><span class="car-plate"><%= car.license_plate || '—' %></span></td>
+            <td><%= car.year || '—' %></td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--gray)">Нет автомобилей</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <div class="card" style="margin-top:20px">
-<div class="card-header"><div class="card-title"><i class="fas fa-file-invoice" style="color:var(--primary);margin-right:8px"></i>История счетов</div></div>
-<div class="card-body" style="padding:0">
-<% if (invoices.length > 0) { %>
-<table class="data-table">
-<thead><tr><th>№</th><th>Дата</th><th>Описание</th><th>Сумма</th><th>Статус</th></tr></thead>
-<tbody>
-<% invoices.forEach(inv => { %>
-<tr>
-<td><%= inv.invoice_number %></td>
-<td><%= new Date(inv.created_at).toLocaleDateString('ru-RU') %></td>
-<td><%= inv.description || '—' %></td>
-<td><span class="amount">₽<%= inv.amount.toLocaleString() %></span></td>
-<td><%= inv.status === 'pending' ? '<span class="status-badge status-pending">Не оплачен</span>' : '<span class="status-badge status-paid">Оплачен</span>' %></td>
-</tr>
-<% }) %>
-</tbody>
-</table>
-<% } else { %>
-<div class="empty-state" style="padding:24px"><i class="fas fa-file-invoice"></i><h3>Нет счетов</h3></div>
-<% } %>
-</div>
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-clipboard-list" style="color:var(--secondary);margin-right:8px"></i>
+      Заказы
+    </div>
+    <div class="card-actions">
+      <span class="btn btn-outline btn-sm"><%= orders.length %> заказов</span>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr><th>№</th><th>Статус</th><th>Сумма</th><th>Дата</th></tr>
+      </thead>
+      <tbody>
+        <% if (orders && orders.length > 0) { %>
+          <% orders.forEach(order => { %>
+          <tr>
+            <td><a href="/admin/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
+            <td>
+              <% if (order.status === 'created') { %><span class="status-badge status-created">Создан</span>
+              <% } else if (order.status === 'in_progress') { %><span class="status-badge status-work">В работе</span>
+              <% } else if (order.status === 'ready') { %><span class="status-badge status-ready">Готов</span>
+              <% } else if (order.status === 'completed') { %><span class="status-badge status-done">Выдан</span>
+              <% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
+            </td>
+            <td><span class="amount">₽<%= (order.total_amount || 0).toLocaleString() %></span></td>
+            <td><%= new Date(order.created_at).toLocaleDateString('ru-RU') %></td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray)">Нет заказов</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>
 
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fas fa-file-invoice" style="color:var(--info);margin-right:8px"></i>
+      Счета
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('invoiceModal').classList.add('active')">
+        <i class="fas fa-plus"></i> Выставить счёт
+      </button>
+    </div>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr><th>№</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr>
+      </thead>
+      <tbody>
+        <% if (invoices && invoices.length > 0) { %>
+          <% invoices.forEach(inv => { %>
+          <tr>
+            <td><%= inv.invoice_number %></td>
+            <td><span class="amount">₽<%= (inv.amount || 0).toLocaleString() %></span></td>
+            <td>
+              <% if (inv.status === 'paid') { %><span class="status-badge status-paid">Оплачен</span>
+              <% } else if (inv.status === 'pending') { %><span class="status-badge status-pending">Ожидает</span>
+              <% } else { %><span class="status-badge status-cancel">Отменён</span><% } %>
+            </td>
+            <td><%= new Date(inv.created_at).toLocaleDateString('ru-RU') %></td>
+          </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray)">Нет счетов</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>
-</main>
+
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Выставить счёт</div>
+      <button class="modal-close" onclick="document.getElementById('invoiceModal').classList.remove('active')">&times;</button>
+    </div>
+    <form method="POST" action="/admin/clients/<%= client.id %>/invoices">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Сумма (₽)</label>
+          <input type="number" name="amount" class="form-input" required min="1" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Описание</label>
+          <textarea name="description" class="form-textarea" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Срок оплаты</label>
+          <input type="date" name="due_date" class="form-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('invoiceModal').classList.remove('active')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Выставить</button>
+      </div>
+    </form>
+  </div>
 </div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>

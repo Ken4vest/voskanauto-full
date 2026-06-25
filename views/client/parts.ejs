@@ -1,154 +1,255 @@
-<%- include('../partials/client_layout') %>
-
 <div style="margin-bottom:24px">
-<h2 style="font-size:24px;font-weight:700;margin-bottom:8px"><i class="fas fa-cogs" style="color:var(--primary);margin-right:12px"></i>Автозапчасти и аксессуары</h2>
-<p style="color:var(--gray);font-size:14px">Оригинальные и аналоговые запчасти для всех марок автомобилей</p>
+  <h2 style="font-size:24px;font-weight:700;margin-bottom:8px"><i class="fas fa-cogs" style="color:var(--primary);margin-right:12px"></i>Автозапчасти и аксессуары</h2>
+  <p style="color:var(--gray);font-size:14px">Оригинальные и аналоговые запчасти для всех марок автомобилей</p>
 </div>
 
 <div class="card" style="margin-bottom:24px">
-<div class="card-header"><div class="card-title"><i class="fas fa-tags" style="color:var(--primary);margin-right:8px"></i>Марки легковых автомобилей</div></div>
-<div class="card-body">
-<div class="brand-grid">
-<% const brands = ['Acura','Audi','Bentley','BMW','Brilliance','Bugatti','BYD','Cadillac','Changan','Chery','Chevrolet','Chrysler','Citroen','Daewoo','Daihatsu','Datsun','Dodge','Dongfeng','FAW','Ferrari','Fiat','Ford','Geely','GMC','Great Wall','Haima','Haval','Hawtai','Honda','Hummer','Hyundai','Infiniti','Isuzu','JAC','Jaguar','Jeep','Kia','Lancia','Land Rover','Lexus','Lifan','Lincoln','Luxgen','Maxus','Mazda','Mercedes-Benz','MINI','Mitsubishi','Nissan','Maserati','Opel','Peugeot','Porsche','Ravon','Renault','Rover','Rolls-Royce','Saab','SEAT','Skoda','Smart','SsangYong','Subaru','Suzuki','Tianye','Toyota','Volkswagen','Volvo','Vortex','Zotye','Exeed','OMODA','GAC','Sollers','Voyah']; %>
-<% brands.forEach(brand => { %>
-<div class="brand-tag" onclick="filterByBrand('<%= brand %>')"><%= brand %></div>
-<% }) %>
-</div>
-</div>
-</div>
-
-<div class="filters-row">
-<input type="text" class="filter-input" placeholder="Поиск по артикулу или названию..." onkeyup="filterParts(this.value)">
-<select class="filter-input" onchange="filterByPartCategory(this.value)">
-<option value="all">Все категории</option>
-<option value="Масла и жидкости">Масла и жидкости</option>
-<option value="Тормозная система">Тормозная система</option>
-<option value="Фильтры">Фильтры</option>
-<option value="Ходовая часть">Ходовая часть</option>
-<option value="Электрика">Электрика</option>
-<option value="Крепёж">Крепёж</option>
-<option value="Кузов">Кузов</option>
-</select>
-<button class="btn btn-outline" onclick="location.href='/client/cart'"><i class="fas fa-shopping-cart"></i> Корзина</button>
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-search" style="color:var(--primary);margin-right:8px"></i>Поиск запчастей</div>
+  </div>
+  <div class="card-body">
+    <div class="filters-row" style="margin-bottom:0;align-items:flex-end">
+      <div class="form-group" style="flex:1;margin-bottom:0">
+        <label class="form-label">Поиск по названию или артикулу</label>
+        <div style="position:relative">
+          <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px"></i>
+          <input type="text" id="partSearch" class="filter-input" style="width:100%;padding-left:36px" placeholder="Введите название, артикул или производителя...">
+        </div>
+      </div>
+      <div class="form-group" style="min-width:180px;margin-bottom:0">
+        <label class="form-label">Категория</label>
+        <select id="categoryFilter" class="filter-input" style="width:100%">
+          <option value="all">Все категории</option>
+          <option value="Масла и жидкости">Масла и жидкости</option>
+          <option value="Тормозная система">Тормозная система</option>
+          <option value="Фильтры">Фильтры</option>
+          <option value="Ходовая часть">Ходовая часть</option>
+          <option value="Электрика">Электрика</option>
+          <option value="Крепёж">Крепёж</option>
+          <option value="Кузов">Кузов</option>
+        </select>
+      </div>
+      <div class="form-group" style="min-width:180px;margin-bottom:0">
+        <label class="form-label">Марка авто</label>
+        <select id="brandFilter" class="filter-input" style="width:100%">
+          <option value="all">Все марки</option>
+          <option value="Toyota">Toyota</option>
+          <option value="Honda">Honda</option>
+          <option value="Nissan">Nissan</option>
+          <option value="Mazda">Mazda</option>
+          <option value="BMW">BMW</option>
+          <option value="Mercedes-Benz">Mercedes-Benz</option>
+          <option value="Audi">Audi</option>
+          <option value="Volkswagen">Volkswagen</option>
+          <option value="Hyundai">Hyundai</option>
+          <option value="Kia">Kia</option>
+          <option value="Ford">Ford</option>
+          <option value="Lada">Lada</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <span id="resultsCount" style="font-size:14px;color:var(--gray);font-weight:500">Всего: <%= parts && parts.length ? parts.length : 0 %> позиций</span>
+      <div style="display:flex;gap:8px">
+        <button id="resetBtn" class="btn btn-outline btn-sm"><i class="fas fa-undo"></i> Сбросить</button>
+        <button class="btn btn-primary btn-sm" onclick="location.href='/client/cart'"><i class="fas fa-shopping-cart"></i> Корзина</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="warehouse-grid" id="partsGrid">
-<% parts.forEach(part => { %>
-<div class="warehouse-card" data-category="<%= part.category %>" data-brand="<%= part.compatible_brands %>">
-<div class="warehouse-card-header">
-<div>
-<div class="warehouse-card-title"><%= part.name %></div>
-<div style="font-size:12px;color:var(--gray);margin-top:4px"><%= part.manufacturer %> | <%= part.category %></div>
-</div>
-<div class="warehouse-card-code"><%= part.article %></div>
-</div>
-<div class="stock-info">
-<div>
-<div class="stock-label">В наличии</div>
-<div class="stock-value <%= part.stock_main <= part.min_stock ? 'warning' : 'ok' %>"><%= part.stock_main %> шт.</div>
-</div>
-<div>
-<div class="stock-label">Цена</div>
-<div class="stock-value" style="color:var(--primary)">₽<%= part.sale_price.toLocaleString() %></div>
-</div>
-</div>
-<div style="margin-top:12px">
-<% if (part.stock_main > 0) { %>
-<button class="btn btn-primary btn-sm add-to-cart-btn" style="width:100%" data-part-id="<%= part.id %>" data-part-name="<%= part.name %>" data-part-price="<%= part.sale_price %>"><i class="fas fa-cart-plus"></i> В корзину</button>
-<% } else { %>
-<button class="btn btn-outline btn-sm" style="width:100%" disabled><i class="fas fa-clock"></i> Под заказ</button>
-<% } %>
-</div>
-</div>
-<% }) %>
+  <% if (parts && parts.length > 0) { %>
+    <% parts.forEach(part => { %>
+    <div class="warehouse-card part-item" 
+         data-category="<%= part.category || '' %>" 
+         data-brand="<%= part.compatible_brands || 'Все' %>" 
+         data-name="<%= (part.name || '').toLowerCase() %>" 
+         data-article="<%= (part.article || '').toLowerCase() %>" 
+         data-manufacturer="<%= (part.manufacturer || '').toLowerCase() %>">
+      <div class="warehouse-card-header">
+        <div>
+          <div class="warehouse-card-title"><%= part.name || '—' %></div>
+          <div style="font-size:12px;color:var(--gray);margin-top:4px"><%= part.manufacturer || '—' %> | <%= part.category || '—' %></div>
+        </div>
+        <div class="warehouse-card-code"><%= part.article || '—' %></div>
+      </div>
+      <div class="stock-info">
+        <div>
+          <div class="stock-label">В наличии</div>
+          <div class="stock-value <%= (part.stock_main || 0) <= (part.min_stock || 0) ? 'warning' : 'ok' %>"><%= part.stock_main || 0 %> шт.</div>
+        </div>
+        <div>
+          <div class="stock-label">Цена</div>
+          <div class="stock-value" style="color:var(--primary)">₽<%= (part.sale_price || 0).toLocaleString() %></div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <% if ((part.stock_main || 0) > 0) { %>
+        <button class="btn btn-primary btn-sm add-cart-btn" style="width:100%" data-id="<%= part.id || 0 %>" data-name="<%= (part.name || '').replace(/'/g, "\\'") %>" data-price="<%= part.sale_price || 0 %>"><i class="fas fa-cart-plus"></i> В корзину</button>
+        <% } else { %>
+        <button class="btn btn-outline btn-sm" style="width:100%" disabled><i class="fas fa-clock"></i> Под заказ</button>
+        <% } %>
+      </div>
+    </div>
+    <% }) %>
+  <% } else { %>
+    <div class="empty-state" style="grid-column:1/-1">
+      <i class="fas fa-boxes"></i>
+      <h3>Нет запчастей</h3>
+      <p>Запчасти появятся позже</p>
+    </div>
+  <% } %>
 </div>
 
 <div class="card" style="margin-top:24px">
-<div class="card-header"><div class="card-title"><i class="fas fa-flask" style="color:var(--info);margin-right:8px"></i>Автохимия и автокосметика</div></div>
-<div class="card-body">
-<div class="service-grid" style="grid-template-columns:repeat(4,1fr)">
-<div class="service-card" style="text-align:center">
-<i class="fas fa-oil-can" style="font-size:32px;color:var(--primary);margin-bottom:12px;display:block"></i>
-<div style="font-weight:600;margin-bottom:4px">Автомасла</div>
-<div style="color:var(--gray);font-size:13px">Моторные, трансмиссионные, гидравлические</div>
-</div>
-<div class="service-card" style="text-align:center">
-<i class="fas fa-tint" style="font-size:32px;color:var(--info);margin-bottom:12px;display:block"></i>
-<div style="font-weight:600;margin-bottom:4px">Спецжидкости</div>
-<div style="color:var(--gray);font-size:13px">Тосол, антифриз, тормозная жидкость</div>
-</div>
-<div class="service-card" style="text-align:center">
-<i class="fas fa-spray-can" style="font-size:32px;color:var(--secondary);margin-bottom:12px;display:block"></i>
-<div style="font-weight:600;margin-bottom:4px">Автокосметика</div>
-<div style="color:var(--gray);font-size:13px">Полироли, воски, очистители</div>
-</div>
-<div class="service-card" style="text-align:center">
-<i class="fas fa-fill-drip" style="font-size:32px;color:var(--success);margin-bottom:12px;display:block"></i>
-<div style="font-weight:600;margin-bottom:4px">Масла на розлив</div>
-<div style="color:var(--gray);font-size:13px">По точному объёму, экономия до 30%</div>
-</div>
-</div>
-</div>
+  <div class="card-header"><div class="card-title"><i class="fas fa-flask" style="color:var(--info);margin-right:8px"></i>Автохимия и автокосметика</div></div>
+  <div class="card-body">
+    <div class="service-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="service-card" style="text-align:center">
+        <i class="fas fa-oil-can" style="font-size:32px;color:var(--primary);margin-bottom:12px;display:block"></i>
+        <div style="font-weight:600;margin-bottom:4px">Автомасла</div>
+        <div style="color:var(--gray);font-size:13px">Моторные, трансмиссионные, гидравлические</div>
+      </div>
+      <div class="service-card" style="text-align:center">
+        <i class="fas fa-tint" style="font-size:32px;color:var(--info);margin-bottom:12px;display:block"></i>
+        <div style="font-weight:600;margin-bottom:4px">Спецжидкости</div>
+        <div style="color:var(--gray);font-size:13px">Тосол, антифриз, тормозная жидкость</div>
+      </div>
+      <div class="service-card" style="text-align:center">
+        <i class="fas fa-spray-can" style="font-size:32px;color:var(--secondary);margin-bottom:12px;display:block"></i>
+        <div style="font-weight:600;margin-bottom:4px">Автокосметика</div>
+        <div style="color:var(--gray);font-size:13px">Полироли, воски, очистители</div>
+      </div>
+      <div class="service-card" style="text-align:center">
+        <i class="fas fa-fill-drip" style="font-size:32px;color:var(--success);margin-bottom:12px;display:block"></i>
+        <div style="font-weight:600;margin-bottom:4px">Масла на розлив</div>
+        <div style="color:var(--gray);font-size:13px">По точному объёму, экономия до 30%</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-function addPartToCart(id, name, price){
-  fetch('/client/cart/add',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({part_id:id, quantity:1, price:price})
-  })
-  .then(r=>r.json())
-  .then(data=>{
-    if(data.success){
-      showToast('success','Запчасть "'+name+'" добавлена в корзину');
-      setTimeout(()=>location.reload(), 500);
+(function() {
+  'use strict';
+
+  // Получаем элементы
+  var partSearch = document.getElementById('partSearch');
+  var categoryFilter = document.getElementById('categoryFilter');
+  var brandFilter = document.getElementById('brandFilter');
+  var resetBtn = document.getElementById('resetBtn');
+  var partsGrid = document.getElementById('partsGrid');
+
+  if (!partSearch || !categoryFilter || !brandFilter || !partsGrid) {
+    console.error('Parts: required elements not found');
+    return;
+  }
+
+  // Вешаем обработчики через addEventListener
+  partSearch.addEventListener('input', filterParts);
+  partSearch.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      filterParts();
     }
-  })
-  .catch(e=>showToast('error','Ошибка: '+e));
-}
-
-function filterParts(query){
-  document.querySelectorAll('.warehouse-card').forEach(card=>{
-    const text=card.textContent.toLowerCase();
-    card.style.display=text.includes(query.toLowerCase())?'block':'none';
   });
-}
+  categoryFilter.addEventListener('change', filterParts);
+  brandFilter.addEventListener('change', filterParts);
+  resetBtn.addEventListener('click', resetFilters);
 
-function filterByPartCategory(cat){
-  document.querySelectorAll('.warehouse-card').forEach(card=>{
-    if(cat==='all'){card.style.display='block';return;}
-    card.style.display=card.dataset.category===cat?'block':'none';
+  // Делегирование для кнопок "В корзину"
+  partsGrid.addEventListener('click', function(e) {
+    var btn = e.target.closest('.add-cart-btn');
+    if (!btn) return;
+    var id = parseInt(btn.dataset.id, 10);
+    var name = btn.dataset.name;
+    var price = parseFloat(btn.dataset.price);
+    addPartToCart(id, name, price);
   });
-}
 
-function filterByBrand(brand){
-  document.querySelectorAll('.warehouse-card').forEach(card=>{
-    const compatible=card.dataset.brand||'';
-    card.style.display=(compatible.includes(brand)||compatible.includes('Все'))?'block':'none';
-  });
-  showToast('info','Показаны запчасти для '+brand);
-}
+  function addPartToCart(id, name, price) {
+    fetch('/client/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ part_id: id, quantity: 1, price: price })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        showToast('success', 'Запчасть "' + name + '" добавлена в корзину');
+        setTimeout(function() { location.reload(); }, 500);
+      }
+    })
+    .catch(function(e) {
+      showToast('error', 'Ошибка: ' + e);
+    });
+  }
 
-function showToast(type,message){
-  const container=document.getElementById('toastContainer')||document.body;
-  const toast=document.createElement('div');
-  toast.className='toast '+type;
-  toast.style.cssText='position:fixed;bottom:24px;right:24px;z-index:300;background:'+(type==='success'?'#10b981':type==='error'?'#ef4444':'#3b82f6')+';color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;box-shadow:0 10px 15px rgba(0,0,0,0.1)';
-  toast.innerHTML='<i class="fas fa-'+(type==='success'?'check-circle':type==='error'?'times-circle':'info-circle')+'"></i><span>'+message+'</span>';
-  container.appendChild(toast);
-  setTimeout(()=>toast.remove(),3000);
-}
+  function filterParts() {
+    var query = partSearch.value.toLowerCase().trim();
+    var cat = categoryFilter.value;
+    var brand = brandFilter.value;
+    var visibleCount = 0;
+    var cards = partsGrid.querySelectorAll('.part-item');
+
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var name = (card.dataset.name || '').toLowerCase();
+      var article = (card.dataset.article || '').toLowerCase();
+      var manufacturer = (card.dataset.manufacturer || '').toLowerCase();
+      var cardCat = card.dataset.category || '';
+      var cardBrand = card.dataset.brand || '';
+
+      var matchesQuery = !query || name.indexOf(query) !== -1 || article.indexOf(query) !== -1 || manufacturer.indexOf(query) !== -1;
+      var matchesCat = cat === 'all' || cardCat === cat;
+      var matchesBrand = brand === 'all' || cardBrand.indexOf(brand) !== -1 || cardBrand.indexOf('Все') !== -1;
+
+      if (matchesQuery && matchesCat && matchesBrand) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    }
+
+    document.getElementById('resultsCount').textContent = 'Найдено: ' + visibleCount + ' позиций';
+
+    var noResults = document.getElementById('noResults');
+
+    if (visibleCount === 0) {
+      if (!noResults) {
+        var empty = document.createElement('div');
+        empty.id = 'noResults';
+        empty.className = 'empty-state';
+        empty.style.cssText = 'grid-column:1/-1;padding:40px';
+        empty.innerHTML = '<i class="fas fa-search" style="font-size:48px;margin-bottom:12px;opacity:.3"></i><h3>Ничего не найдено</h3><p>Попробуйте изменить параметры поиска</p>';
+        partsGrid.appendChild(empty);
+      }
+    } else if (noResults) {
+      noResults.remove();
+    }
+  }
+
+  function resetFilters() {
+    partSearch.value = '';
+    categoryFilter.value = 'all';
+    brandFilter.value = 'all';
+    filterParts();
+    document.getElementById('resultsCount').textContent = 'Всего: <%= parts && parts.length ? parts.length : 0 %> позиций';
+  }
+
+  function showToast(type, message) {
+    var container = document.getElementById('toastContainer') || document.body;
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:300;background:' + (type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6') + ';color:white;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;animation:toastIn .3s ease;box-shadow:0 10px 15px rgba(0,0,0,0.1)';
+    toast.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle') + '"></i><span>' + message + '</span>';
+    container.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3000);
+  }
+
+  // Инициализация
+  filterParts();
+})();
 </script>
-
-</div>
-</main>
-</div>
-<script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-</script>
-</body>
-</html>
