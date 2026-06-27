@@ -1,123 +1,308 @@
-<div class="filters-row">
-  <h2 style="font-size:20px;font-weight:700"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:8px"></i>Мои записи</h2>
-  <button class="btn btn-primary" onclick="openModal('newAppointment')"><i class="fas fa-plus"></i> Новая запись</button>
+<div class="page-header">
+  <h1><i class="fas fa-calendar-alt"></i> Мои записи</h1>
+  <button class="btn btn-primary" onclick="toggleAppointmentForm()">
+    <i class="fas fa-plus"></i> Новая запись
+  </button>
 </div>
 
+<!-- Список записей -->
 <div class="card">
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-list" style="color:var(--primary);margin-right:8px"></i>История записей</div>
+  </div>
   <div class="card-body" style="padding:0">
     <% if (appointments && appointments.length > 0) { %>
-    <table class="data-table">
-      <thead>
-        <tr><th>Дата</th><th>Время</th><th>Услуга</th><th>Автомобиль</th><th>Статус</th><th>Действия</th></tr>
-      </thead>
-      <tbody>
-        <% appointments.forEach(app => { %>
-        <tr>
-          <td><%= app.appointment_date ? new Date(app.appointment_date).toLocaleDateString('ru-RU') : '—' %></td>
-          <td><%= app.appointment_time || '—' %></td>
-          <td><%= app.service_name || 'Мойка / ТО' %></td>
-          <td><%= app.brand ? app.brand + ' ' + app.model : '—' %></td>
-          <td>
-            <% if (app.status === 'pending') { %><span class="status-badge status-pending">На рассмотрении</span>
-            <% } else if (app.status === 'confirmed') { %><span class="status-badge status-confirmed">Подтверждено</span>
-            <% } else if (app.status === 'cancelled') { %><span class="status-badge status-cancel">Отменено</span>
-            <% } else if (app.status === 'completed') { %><span class="status-badge status-done">Выполнено</span>
-            <% } else { %><span class="status-badge status-wait"><%= app.status %></span><% } %>
-          </td>
-          <td>
+      <div class="appointments-list">
+        <% appointments.forEach(function(app) { %>
+        <div class="appointment-item">
+          <div class="appointment-date">
+            <div class="appointment-day"><%= app.appointment_date ? new Date(app.appointment_date).getDate() : '—' %></div>
+            <div class="appointment-month"><%= app.appointment_date ? new Date(app.appointment_date).toLocaleDateString('ru-RU', {month:'short'}) : '' %></div>
+          </div>
+          <div class="appointment-info">
+            <div class="appointment-service"><%= app.service_name || 'Услуга не указана' %></div>
+            <div class="appointment-car"><i class="fas fa-car"></i> <%= app.brand ? app.brand + ' ' + app.model : 'Авто не указано' %> <%= app.license_plate ? '(' + app.license_plate + ')' : '' %></div>
+            <div class="appointment-time"><i class="fas fa-clock"></i> <%= app.appointment_time || 'Время не указано' %></div>
+          </div>
+          <div class="appointment-status">
             <% if (app.status === 'pending') { %>
-            <form method="POST" action="/client/appointments/<%= app.id %>/cancel" style="display:inline">
-              <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-times"></i> Отменить</button>
-            </form>
+              <span class="status-badge status-wait"><i class="fas fa-hourglass-half"></i> Ожидает</span>
+            <% } else if (app.status === 'confirmed') { %>
+              <span class="status-badge status-ready"><i class="fas fa-check-circle"></i> Подтверждена</span>
+            <% } else if (app.status === 'cancelled') { %>
+              <span class="status-badge status-cancel"><i class="fas fa-times-circle"></i> Отменена</span>
+            <% } else if (app.status === 'completed') { %>
+              <span class="status-badge status-done"><i class="fas fa-check-double"></i> Выполнена</span>
+            <% } else { %>
+              <span class="status-badge"><%= app.status %></span>
             <% } %>
-          </td>
-        </tr>
+          </div>
+          <% if (app.status === 'pending') { %>
+          <form method="POST" action="/client/appointments/<%= app.id %>/cancel" style="margin-left:12px">
+            <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Отменить запись?')">
+              <i class="fas fa-times"></i>
+            </button>
+          </form>
+          <% } %>
+        </div>
         <% }) %>
-      </tbody>
-    </table>
+      </div>
     <% } else { %>
-    <div class="empty-state">
-      <i class="fas fa-calendar-alt"></i>
-      <h3>Нет записей</h3>
-      <p>Запишитесь на обслуживание или мойку</p>
-    </div>
+      <div class="empty-state" style="padding:60px 20px">
+        <div style="width:80px;height:80px;background:var(--gray-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+          <i class="fas fa-calendar-alt" style="font-size:32px;color:var(--gray)"></i>
+        </div>
+        <h3 style="margin:0 0 8px;color:var(--dark)">Нет записей</h3>
+        <p style="color:var(--gray);margin:0">Запишитесь на обслуживание или мойку</p>
+      </div>
     <% } %>
   </div>
 </div>
 
-<div class="modal-overlay" id="newAppointmentModal">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <div class="modal-title">Новая запись</div>
-      <button class="modal-close" onclick="closeModal('newAppointmentModal')"><i class="fas fa-times"></i></button>
+<!-- Форма новой записи (модальное окно) -->
+<div id="appointmentModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;backdrop-filter:blur(4px)">
+  <div class="modal-content" style="background:#fff;border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;padding:0;box-shadow:0 25px 50px rgba(0,0,0,0.25);animation:modalSlide 0.3s ease">
+    
+    <!-- Шапка модалки -->
+    <div style="padding:24px 28px 20px;border-bottom:1px solid #f3f4f6">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0;font-size:20px;font-weight:700;color:#111827"><i class="fas fa-calendar-plus" style="color:var(--primary);margin-right:10px"></i>Новая запись</h3>
+        <button onclick="toggleAppointmentForm()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#9ca3af;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">&times;</button>
+      </div>
+      <p style="margin:8px 0 0;color:#6b7280;font-size:14px">Выберите удобное время для визита</p>
     </div>
-    <div class="modal-body">
-      <form id="appointmentForm" method="POST" action="/client/appointments">
-        <div class="form-group">
-          <label class="form-label">Тип записи</label>
-          <select name="service_type" class="form-select" onchange="updateServices(this.value)">
-            <option value="to">ТО / Ремонт</option>
-            <option value="wash">Мойка</option>
-          </select>
+
+    <form method="POST" action="/client/appointments" style="padding:24px 28px">
+      
+      <!-- Тип записи -->
+      <div class="form-group" style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Тип записи</label>
+        <div style="display:flex;gap:12px">
+          <label class="radio-card" style="flex:1;padding:16px;border:2px solid #e5e7eb;border-radius:12px;cursor:pointer;text-align:center;transition:all 0.2s" onmouseover="this.style.borderColor='#bfdbfe'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='#e5e7eb'">
+            <input type="radio" name="type" value="service" checked style="display:none" onchange="updateType(this)">
+            <i class="fas fa-wrench" style="font-size:24px;color:var(--primary);margin-bottom:8px;display:block"></i>
+            <div style="font-weight:600;font-size:14px;color:#111827">ТО / Ремонт</div>
+          </label>
+          <label class="radio-card" style="flex:1;padding:16px;border:2px solid #e5e7eb;border-radius:12px;cursor:pointer;text-align:center;transition:all 0.2s" onmouseover="this.style.borderColor='#bfdbfe'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='#e5e7eb'">
+            <input type="radio" name="type" value="wash" style="display:none" onchange="updateType(this)">
+            <i class="fas fa-shower" style="font-size:24px;color:#3b82f6;margin-bottom:8px;display:block"></i>
+            <div style="font-weight:600;font-size:14px;color:#111827">Мойка</div>
+          </label>
         </div>
-        <div class="form-group">
-          <label class="form-label">Автомобиль</label>
-          <select name="car_id" class="form-select" required>
+      </div>
+
+      <!-- Автомобиль -->
+      <div class="form-group" style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Автомобиль <span style="color:#ef4444">*</span></label>
+        <div class="select-wrapper" style="position:relative">
+          <select name="car_id" required style="width:100%;padding:12px 40px 12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;background:#fff;appearance:none;cursor:pointer;transition:all 0.2s" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
             <option value="">— Выберите авто —</option>
             <% if (cars && cars.length > 0) { %>
-              <% cars.forEach(car => { %>
-              <option value="<%= car.id %>"><%= car.brand %> <%= car.model %> (<%= car.license_plate || 'без номера' %>)</option>
+              <% cars.forEach(function(car) { %>
+                <option value="<%= car.id %>"><%= car.brand %> <%= car.model %> <%= car.license_plate ? '(' + car.license_plate + ')' : '' %></option>
               <% }) %>
             <% } %>
           </select>
+          <i class="fas fa-chevron-down" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none"></i>
         </div>
-        <div class="form-group" id="serviceSelect">
-          <label class="form-label">Услуга</label>
-          <select name="service_id" class="form-select">
+        <% if (!cars || cars.length === 0) { %>
+          <div style="margin-top:8px;padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e">
+            <i class="fas fa-exclamation-triangle" style="margin-right:6px"></i>
+            Сначала <a href="/client/cars" style="color:#b45309;text-decoration:underline;font-weight:600">добавьте автомобиль</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Услуга -->
+      <div class="form-group" style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Услуга <span style="color:#ef4444">*</span></label>
+        <div class="select-wrapper" style="position:relative">
+          <select name="service_id" id="serviceSelect" required style="width:100%;padding:12px 40px 12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;background:#fff;appearance:none;cursor:pointer;transition:all 0.2s" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
             <option value="">— Выберите услугу —</option>
             <% if (services && services.length > 0) { %>
-              <% services.forEach(s => { %>
-              <option value="<%= s.id %>"><%= s.name %> (₽<%= (s.price || 0).toLocaleString() %>)</option>
+              <% services.forEach(function(s) { %>
+                <option value="<%= s.id %>" data-category="<%= s.category %>"><%= s.name %> (<%= s.category %>)</option>
               <% }) %>
             <% } %>
           </select>
+          <i class="fas fa-chevron-down" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none"></i>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Дата *</label>
-            <input type="date" name="appointment_date" class="form-input" required min="<%= new Date().toISOString().split('T')[0] %>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Время *</label>
-            <select name="appointment_time" class="form-select" required>
-              <option value="">— Выберите —</option>
-              <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option>
-              <option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option>
-              <option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option>
-              <option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
-              <option value="20:00">20:00</option>
-            </select>
+      </div>
+
+      <!-- Дата и время -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="form-group">
+          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Дата <span style="color:#ef4444">*</span></label>
+          <div style="position:relative">
+            <input type="date" name="appointment_date" required style="width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;transition:all 0.2s" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'" min="<%= new Date().toISOString().split('T')[0] %>">
+            <i class="fas fa-calendar" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none"></i>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Комментарий</label>
-          <textarea name="notes" class="form-textarea" placeholder="Опишите проблему..."></textarea>
+          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Время <span style="color:#ef4444">*</span></label>
+          <div class="select-wrapper" style="position:relative">
+            <select name="appointment_time" required style="width:100%;padding:12px 40px 12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;background:#fff;appearance:none;cursor:pointer;transition:all 0.2s" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+              <option value="">— Время —</option>
+              <option value="09:00">09:00</option>
+              <option value="10:00">10:00</option>
+              <option value="11:00">11:00</option>
+              <option value="12:00">12:00</option>
+              <option value="13:00">13:00</option>
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00">17:00</option>
+              <option value="18:00">18:00</option>
+            </select>
+            <i class="fas fa-clock" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none"></i>
+          </div>
         </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('newAppointmentModal')">Отмена</button>
-      <button class="btn btn-primary" onclick="document.getElementById('appointmentForm').submit()"><i class="fas fa-calendar-check"></i> Записаться</button>
-    </div>
+      </div>
+
+      <!-- Комментарий -->
+      <div class="form-group" style="margin-bottom:24px">
+        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">Комментарий</label>
+        <textarea name="notes" rows="3" placeholder="Опишите проблему или пожелания..." style="width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;resize:vertical;transition:all 0.2s;font-family:inherit" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+      </div>
+
+      <!-- Кнопки -->
+      <div style="display:flex;gap:12px;justify-content:flex-end;padding-top:20px;border-top:1px solid #f3f4f6">
+        <button type="button" class="btn btn-outline" onclick="toggleAppointmentForm()" style="padding:12px 24px">Отмена</button>
+        <button type="submit" class="btn btn-primary" style="padding:12px 28px;font-weight:600">
+          <i class="fas fa-calendar-check" style="margin-right:8px"></i>Записаться
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
-<script>
-function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
-function closeModal(id){document.getElementById(id).classList.remove('active');}
-function updateServices(type){
-  const sel=document.getElementById('serviceSelect');
-  sel.style.display=type==='to'?'block':'none';
+<style>
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.appointment-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-color: #bfdbfe;
+}
+
+.appointment-date {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.appointment-day {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.appointment-month {
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.appointment-info {
+  flex: 1;
+}
+
+.appointment-service {
+  font-weight: 600;
+  font-size: 15px;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.appointment-car, .appointment-time {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.appointment-car i, .appointment-time i {
+  margin-right: 6px;
+  color: #9ca3af;
+}
+
+.appointment-status {
+  flex-shrink: 0;
+}
+
+.radio-card:has(input:checked) {
+  border-color: #3b82f6 !important;
+  background: #eff6ff;
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="date"]:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+</style>
+
+<script>
+function toggleAppointmentForm() {
+  var modal = document.getElementById('appointmentModal');
+  if (modal.style.display === 'flex') {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  } else {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function updateType(radio) {
+  document.querySelectorAll('.radio-card').forEach(function(card) {
+    card.style.borderColor = '#e5e7eb';
+    card.style.background = '#fff';
+  });
+  radio.parentElement.style.borderColor = '#3b82f6';
+  radio.parentElement.style.background = '#eff6ff';
+}
+
+// Закрытие по Escape и клику вне
+document.getElementById('appointmentModal').addEventListener('click', function(e) {
+  if (e.target === this) toggleAppointmentForm();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('appointmentModal');
+    if (modal.style.display === 'flex') toggleAppointmentForm();
+  }
+});
 </script>

@@ -1,3 +1,4 @@
+
 <div class="filters-row">
   <h2 style="font-size:20px;font-weight:700"><i class="fas fa-user-tie" style="color:var(--primary);margin-right:8px"></i>Персонал</h2>
   <button class="btn btn-primary" onclick="openModal('addStaff')"><i class="fas fa-plus"></i> Новый сотрудник</button>
@@ -7,7 +8,7 @@
   <div class="card-body" style="padding:0">
     <table class="data-table">
       <thead>
-        <tr><th>ID</th><th>ФИО</th><th>Роль</th><th>Email</th><th>Телефон</th><th>Статус</th></tr>
+        <tr><th>ID</th><th>ФИО</th><th>Роль</th><th>Email</th><th>Телефон</th><th>Статус</th><th>Действия</th></tr>
       </thead>
       <tbody>
         <% if (staff && staff.length > 0) { %>
@@ -19,11 +20,16 @@
             <td><%= s.email %></td>
             <td><%= s.phone || '—' %></td>
             <td><span class="status-badge status-<%= s.is_active ? 'confirmed' : 'cancel' %>"><%= s.is_active ? 'Активен' : 'Заблокирован' %></span></td>
+            <td>
+              <button class="btn btn-sm btn-outline" onclick="toggleStaffStatus(<%= s.id %>, <%= !s.is_active %>)">
+                <i class="fas fa-<%= s.is_active ? 'ban' : 'check' %>"></i> <%= s.is_active ? 'Заблокировать' : 'Разблокировать' %>
+              </button>
+            </td>
           </tr>
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="6" style="text-align:center;padding:24px;color:var(--gray)">
+            <td colspan="7" style="text-align:center;padding:24px;color:var(--gray)">
               <i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>
               Нет сотрудников
             </td>
@@ -41,11 +47,11 @@
       <button class="modal-close" onclick="closeModal('addStaffModal')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <form id="addStaffForm" method="POST" action="/admin/staff">
+      <form id="addStaffForm" method="POST" action="/admin/staff" onsubmit="return validateForm()">
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">ФИО *</label>
-            <input type="text" name="full_name" class="form-input" required>
+            <input type="text" name="full_name" class="form-input" required minlength="2" maxlength="100">
           </div>
           <div class="form-group">
             <label class="form-label">Email *</label>
@@ -55,26 +61,35 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Пароль *</label>
-            <input type="password" name="password" class="form-input" required minlength="6">
+            <input type="password" name="password" id="password" class="form-input" required minlength="6" maxlength="50">
+            <small style="color:var(--gray);font-size:12px">Минимум 6 символов</small>
           </div>
           <div class="form-group">
-            <label class="form-label">Телефон</label>
-            <input type="text" name="phone" class="form-input">
+            <label class="form-label">Подтвердите пароль *</label>
+            <input type="password" name="password_confirm" id="password_confirm" class="form-input" required minlength="6">
+            <small id="passwordError" style="color:#dc3545;font-size:12px;display:none">Пароли не совпадают</small>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Роль *</label>
-          <select name="role" class="form-select" required>
-            <option value="mechanic">Механик</option>
-            <option value="receptionist">Приёмщик</option>
-            <option value="admin">Администратор</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input type="tel" name="phone" class="form-input" placeholder="+7 (999) 123-45-67">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Роль *</label>
+            <select name="role" class="form-select" required>
+              <option value="">Выберите роль</option>
+              <option value="mechanic">Механик</option>
+              <option value="receptionist">Приёмщик</option>
+              <option value="admin">Администратор</option>
+            </select>
+          </div>
         </div>
       </form>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('addStaffModal')">Отмена</button>
-      <button class="btn btn-primary" onclick="document.getElementById('addStaffForm').submit()"><i class="fas fa-save"></i> Сохранить</button>
+      <button class="btn btn-primary" onclick="submitForm()"><i class="fas fa-save"></i> Сохранить</button>
     </div>
   </div>
 </div>
@@ -83,4 +98,35 @@
 function openModal(id){document.getElementById(id+'Modal').classList.add('active');}
 function closeModal(id){document.getElementById(id).classList.remove('active');}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+
+function validateForm() {
+  const password = document.getElementById('password').value;
+  const passwordConfirm = document.getElementById('password_confirm').value;
+  const errorEl = document.getElementById('passwordError');
+  
+  if (password !== passwordConfirm) {
+    errorEl.style.display = 'block';
+    return false;
+  }
+  errorEl.style.display = 'none';
+  return true;
+}
+
+function submitForm() {
+  if (validateForm()) {
+    document.getElementById('addStaffForm').submit();
+  }
+}
+
+function toggleStaffStatus(id, activate) {
+  const action = activate ? 'разблокировать' : 'заблокировать';
+  if (confirm('Вы уверены, что хотите ' + action + ' сотрудника?')) {
+    fetch('/admin/staff/' + id + '/toggle', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) location.reload();
+        else alert('Ошибка: ' + data.error);
+      });
+  }
+}
 </script>

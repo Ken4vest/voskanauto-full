@@ -1,63 +1,202 @@
-<div class="card" style="margin-bottom:20px">
-  <div class="card-header">
-    <div class="card-title">
-      <i class="fas fa-shopping-cart" style="color:var(--primary);margin-right:8px"></i>Корзина
-    </div>
-    <div class="card-actions">
-      <% if (cartItems && cartItems.length > 0) { %>
-      <form method="POST" action="/client/cart/clear" style="display:inline">
-        <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i> Очистить</button>
-      </form>
-      <% } %>
-    </div>
-  </div>
-  <div class="card-body" style="padding:0">
-    <% if (cartItems && cartItems.length > 0) { %>
-    <table class="data-table">
-      <thead>
-        <tr><th>Услуга / Товар</th><th>Категория</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Действия</th></tr>
-      </thead>
-      <tbody>
-        <% cartItems.forEach(item => { %>
-        <tr>
-          <td>
-            <% if (item.service_name) { %>
-            <div class="client-name"><i class="fas fa-wrench" style="color:var(--primary);margin-right:6px"></i><%= item.service_name %></div>
-            <% } else if (item.part_name) { %>
-            <div class="client-name"><i class="fas fa-cogs" style="color:var(--secondary);margin-right:6px"></i><%= item.part_name %></div>
-            <div style="font-size:11px;color:var(--gray)"><%= item.article || '' %></div>
-            <% } else { %>
-            <div class="client-name">—</div>
-            <% } %>
-          </td>
-          <td><%= item.category || 'Запчасти' %></td>
-          <td><%= item.quantity || 1 %></td>
-          <td>₽<%= (item.price || 0).toLocaleString() %></td>
-          <td><span class="amount">₽<%= (item.total || 0).toLocaleString() %></span></td>
-          <td>
-            <form method="POST" action="/client/cart/remove/<%= item.id %>" style="display:inline">
-              <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-trash"></i></button>
-            </form>
-          </td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-    <div style="padding:20px;border-top:1px solid var(--gray-border)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:14px;color:var(--gray)">Товаров: <%= cartItems.length %></div>
-        <div style="font-size:24px;font-weight:700">Итого: ₽<%= (cartTotal && cartTotal.total ? cartTotal.total : 0).toLocaleString() %></div>
-      </div>
-      <div style="margin-top:16px;text-align:right">
-        <a href="/client/checkout" class="btn btn-primary" style="padding:12px 32px;font-size:16px"><i class="fas fa-credit-card"></i> Оформить заказ</a>
-      </div>
-    </div>
-    <% } else { %>
-    <div class="empty-state">
-      <i class="fas fa-shopping-cart"></i>
-      <h3>Корзина пуста</h3>
-      <p><a href="/client/services">Перейти к услугам</a> или <a href="/client/parts">купить запчасти</a></p>
-    </div>
-    <% } %>
+<div class="page-header">
+  <h1><i class="fas fa-shopping-cart"></i> Корзина</h1>
+  <div class="header-actions">
+    <a href="/client/services" class="btn btn-outline">
+      <i class="fas fa-wrench"></i> Услуги
+    </a>
+    <a href="/client/parts" class="btn btn-outline">
+      <i class="fas fa-cogs"></i> Запчасти
+    </a>
   </div>
 </div>
+
+<% if (cartItems && cartItems.length > 0) { %>
+<div class="cart-layout">
+  <!-- СПИСОК ТОВАРОВ -->
+  <div class="cart-items">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Товары в корзине (<%= cartItems.length %>)</div>
+        <form method="POST" action="/client/cart/clear" style="margin:0">
+          <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="return confirm('Очистить корзину?')">
+            <i class="fas fa-trash"></i> Очистить
+          </button>
+        </form>
+      </div>
+      <div class="card-body" style="padding:0">
+        <% cartItems.forEach(function(item) { %>
+        <div class="cart-item">
+          <div class="cart-item-icon">
+            <% if (item.service_id) { %>
+              <i class="fas fa-wrench" style="color:var(--primary)"></i>
+            <% } else { %>
+              <i class="fas fa-cog" style="color:var(--secondary)"></i>
+            <% } %>
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">
+              <% if (item.service_id) { %>
+                <%= item.service_name %>
+                <span class="item-badge service">Услуга</span>
+              <% } else { %>
+                <%= item.part_name %>
+                <span class="item-badge part">Запчасть</span>
+              <% } %>
+            </div>
+            <div class="cart-item-meta">
+              <% if (item.service_id) { %>
+                <span><i class="fas fa-clock"></i> <%= item.labor_hours || 0 %> ч.</span>
+                <span><i class="fas fa-tag"></i> <%= item.service_category || 'Услуга' %></span>
+              <% } else { %>
+                <span><i class="fas fa-barcode"></i> <%= item.part_article || '—' %></span>
+                <span><i class="fas fa-folder"></i> <%= item.part_category || 'Запчасть' %></span>
+              <% } %>
+            </div>
+          </div>
+          <div class="cart-item-qty">
+            <span class="qty-label">× <%= item.quantity %></span>
+          </div>
+          <div class="cart-item-price">
+            <div class="price-value">₽<%= (item.price * item.quantity).toLocaleString() %></div>
+            <% if (item.quantity > 1) { %>
+              <div class="price-unit">₽<%= item.price.toLocaleString() %> / шт.</div>
+            <% } %>
+          </div>
+          <form method="POST" action="/client/cart/remove/<%= item.id %>" style="margin:0">
+            <button type="submit" class="btn btn-remove" title="Удалить">
+              <i class="fas fa-times"></i>
+            </button>
+          </form>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ИТОГО -->
+  <div class="cart-summary">
+    <div class="card summary-card">
+      <div class="card-header">
+        <div class="card-title"><i class="fas fa-receipt"></i> Итого</div>
+      </div>
+      <div class="card-body">
+        <div class="summary-row">
+          <span>Товары</span>
+          <span><%= cartItems.length %> шт.</span>
+        </div>
+        <div class="summary-row">
+          <span>Стоимость услуг</span>
+          <span>₽<%= cartItems.filter(i => i.service_id).reduce((sum, i) => sum + i.price * i.quantity, 0).toLocaleString() %></span>
+        </div>
+        <div class="summary-row">
+          <span>Стоимость запчастей</span>
+          <span>₽<%= cartItems.filter(i => i.part_id).reduce((sum, i) => sum + i.price * i.quantity, 0).toLocaleString() %></span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row total">
+          <span>Итого к оплате</span>
+          <span>₽<%= (cartTotal && cartTotal.total) ? cartTotal.total.toLocaleString() : '0' %></span>
+        </div>
+        <a href="/client/checkout" class="btn btn-primary btn-checkout">
+          <i class="fas fa-credit-card"></i> Оформить заказ
+        </a>
+        <p class="checkout-hint">После оформления заказа администратор свяжется с вами для подтверждения</p>
+      </div>
+    </div>
+
+    <!-- ПОМОЩЬ -->
+    <div class="card help-card">
+      <div class="card-body">
+        <div class="help-title"><i class="fas fa-question-circle"></i> Нужна помощь?</div>
+        <p class="help-text">Если у вас есть вопросы по товарам в корзине, свяжитесь с нами</p>
+        <a href="tel:+79990000000" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">
+          <i class="fas fa-phone"></i> Позвонить
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<% } else { %>
+<div class="empty-cart">
+  <div class="empty-cart-icon">
+    <i class="fas fa-shopping-cart"></i>
+  </div>
+  <h2>Корзина пуста</h2>
+  <p>Добавьте услуги или запчасти, чтобы оформить заказ</p>
+  <div class="empty-cart-actions">
+    <a href="/client/services" class="btn btn-primary">
+      <i class="fas fa-wrench"></i> К услугам
+    </a>
+    <a href="/client/parts" class="btn btn-outline">
+      <i class="fas fa-cogs"></i> К запчастям
+    </a>
+  </div>
+</div>
+<% } %>
+
+<style>
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-header h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:12px}
+.header-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.cart-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;animation:fadeInUp 0.5s ease}
+.cart-items .card{margin-bottom:0}
+.cart-item{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--gray-border);transition:all .2s;animation:fadeInUp 0.4s ease}
+.cart-item:last-child{border-bottom:none}
+.cart-item:hover{background:#f8fafc;transform:translateX(4px)}
+.cart-item-icon{width:44px;height:44px;border-radius:var(--radius-sm);background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:14px;font-weight:600;color:var(--dark);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.item-badge.service{background:#dbeafe;color:#1d4ed8}
+.item-badge.part{background:#fef3c7;color:#92400e}
+.cart-item-meta{display:flex;gap:12px;margin-top:4px;flex-wrap:wrap}
+.cart-item-meta span{font-size:12px;color:var(--gray);display:flex;align-items:center;gap:4px}
+.cart-item-meta i{font-size:10px}
+.cart-item-qty{flex-shrink:0}
+.qty-label{font-size:14px;font-weight:600;color:var(--dark);background:var(--gray-light);padding:4px 10px;border-radius:var(--radius-sm)}
+.cart-item-price{text-align:right;flex-shrink:0;min-width:100px}
+.price-value{font-size:16px;font-weight:700;color:var(--dark)}
+.price-unit{font-size:12px;color:var(--gray);margin-top:2px}
+.btn-remove{width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--gray);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-remove:hover{background:#fee2e2;color:var(--danger);transform:rotate(90deg)}
+
+.summary-card{border:none;position:sticky;top:24px;animation:fadeInUp 0.5s ease 0.1s both}
+.summary-card .card-body{padding:20px}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:var(--gray)}
+.summary-row.total{margin-top:12px;font-size:18px;font-weight:700;color:var(--dark)}
+.summary-row.total span:last-child{color:var(--primary)}
+.summary-divider{height:1px;background:var(--gray-border);margin:12px 0}
+.btn-checkout{width:100%;margin-top:16px;padding:14px;font-size:15px;justify-content:center;transition:all 0.3s}
+.btn-checkout:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,0.3)}
+.checkout-hint{font-size:12px;color:var(--gray);text-align:center;margin-top:12px;line-height:1.5}
+
+.help-card{border:none;background:linear-gradient(135deg,var(--primary-light),#e0e7ff);animation:fadeInUp 0.5s ease 0.2s both}
+.help-card .card-body{padding:20px}
+.help-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.help-text{font-size:13px;color:var(--gray);margin-bottom:12px;line-height:1.5}
+
+.empty-cart{text-align:center;padding:60px 20px;animation:fadeInUp 0.5s ease}
+.empty-cart-icon{width:100px;height:100px;border-radius:50%;background:var(--gray-light);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;color:var(--gray);font-size:48px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.empty-cart h2{font-size:20px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.empty-cart p{color:var(--gray);font-size:14px;margin-bottom:24px}
+.empty-cart-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+@media(max-width:768px){
+  .cart-layout{grid-template-columns:1fr}
+  .summary-card{position:static}
+  .cart-item{flex-wrap:wrap;gap:10px}
+  .cart-item-price{width:100%;text-align:left;display:flex;align-items:center;gap:8px}
+  .cart-item-qty{order:3}
+}
+</style>

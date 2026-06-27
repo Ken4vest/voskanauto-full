@@ -1,0 +1,547 @@
+/* ============================================================
+   ВОСКАН АВТО — ТЁМНАЯ ТЕМА (совместимая с admin_layout)
+   ============================================================ */
+
+/* ---------- Переменные тёмной темы ---------- */
+[data-theme="dark"] {
+  --primary: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-light: #1e3a5f;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #22d3ee;
+  --bg-body: #0f172a;
+  --bg-card: #1e293b;
+  --bg-sidebar: #0f172a;
+  --bg-navbar: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
+}
+
+/* ---------- Базовые элементы ---------- */
+[data-theme="dark"] body {
+  background: var(--bg-body) !important;
+  color: var(--text-primary);
+}
+
+/* ---------- Боковое меню (sidebar) ---------- */
+[data-theme="dark"] .sidebar {
+  background: var(--bg-sidebar) !important;
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .sidebar-header {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .nav-section {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .nav-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .nav-item:hover {
+  background: #1e293b;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-item.active {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+[data-theme="dark"] .sidebar-footer {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .user-name {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .user-role {
+  color: var(--text-muted);
+}
+
+/* ---------- Верхняя панель ---------- */
+[data-theme="dark"] .top-bar {
+  background: var(--bg-navbar) !important;
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .page-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .breadcrumbs {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .top-btn {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .top-btn:hover {
+  background: #1e293b;
+}
+
+/* ---------- Карточки (stat-card, card) ---------- */
+[data-theme="dark"] .stat-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .stat-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .stat-label {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .stat-value {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .stat-change {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .card-header {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .card-title {
+  color: var(--text-primary);
+}
+
+/* ---------- Таблицы ---------- */
+[data-theme="dark"] .data-table th {
+  background: #1e293b;
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .data-table td {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .data-table tr:hover td {
+  background: #1e293b;
+}
+
+/* ---------- Формы ---------- */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .filter-input {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus,
+[data-theme="dark"] .filter-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--text-secondary);
+}
+
+/* ---------- Кнопки ---------- */
+[data-theme="dark"] .btn-outline {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .btn-outline:hover {
+  background: #1e293b;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: var(--primary-dark);
+}
+
+/* ---------- Статусы ---------- */
+[data-theme="dark"] .status-badge {
+  opacity: 0.9;
+}
+
+/* ---------- Пустые состояния ---------- */
+[data-theme="dark"] .empty-state {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .empty-state h3 {
+  color: var(--text-primary);
+}
+
+/* ---------- Чат ---------- */
+[data-theme="dark"] .admin-chat-window,
+[data-theme="dark"] .chat-window {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .chat-messages,
+[data-theme="dark"] .admin-chat-messages {
+  background: var(--bg-body);
+}
+
+[data-theme="dark"] .chat-input,
+[data-theme="dark"] .admin-chat-input-area input {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* ---------- Загруженность постов ---------- */
+[data-theme="dark"] .post-status {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* ---------- Переключатель темы ---------- */
+.theme-toggle {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gray-border, #e2e8f0);
+  background: var(--white, #fff);
+  font-size: 18px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  border-color: var(--primary, #2563eb);
+}
+
+/* ---------- Звёздочки рейтинга ---------- */
+.star-rating {
+  display: inline-flex;
+  gap: 4px;
+  font-size: 24px;
+}
+
+.star-rating .star {
+  cursor: pointer;
+  color: #e2e8f0;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.star-rating .star.active,
+.star-rating .star:hover {
+  color: #fbbf24;
+  transform: scale(1.2);
+}
+
+/* ---------- Таймлайн ---------- */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-color, #e2e8f0);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -1.75rem;
+  top: 0.25rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary, #2563eb);
+  border: 3px solid var(--white, #fff);
+  box-shadow: 0 0 0 2px var(--primary, #2563eb);
+}
+
+.timeline-item.status-change::before { background: var(--warning, #f59e0b); box-shadow: 0 0 0 2px var(--warning, #f59e0b); }
+.timeline-item.create::before { background: var(--success, #10b981); box-shadow: 0 0 0 2px var(--success, #10b981); }
+.timeline-item.comment::before { background: var(--info, #3b82f6); box-shadow: 0 0 0 2px var(--info, #3b82f6); }
+
+.timeline-content {
+  background: var(--gray-light, #f1f5f9);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--gray-border, #e2e8f0);
+}
+
+[data-theme="dark"] .timeline-content {
+  background: #1e293b;
+  border-color: var(--border-color);
+}
+
+.timeline-time {
+  font-size: 0.75rem;
+  color: var(--gray, #64748b);
+}
+
+.timeline-user {
+  font-weight: 600;
+  color: var(--dark, #1e293b);
+}
+
+[data-theme="dark"] .timeline-user {
+  color: var(--text-primary);
+}
+
+.timeline-action {
+  color: var(--gray, #64748b);
+}
+
+/* ---------- Комментарии ---------- */
+.comment-card {
+  background: var(--gray-light, #f1f5f9);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--gray-border, #e2e8f0);
+}
+
+[data-theme="dark"] .comment-card {
+  background: #1e293b;
+  border-color: var(--border-color);
+}
+
+.comment-card.internal {
+  border-left: 3px solid var(--warning, #f59e0b);
+}
+
+[data-theme="dark"] .comment-card.internal {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--dark, #1e293b);
+}
+
+[data-theme="dark"] .comment-author {
+  color: var(--text-primary);
+}
+
+.comment-role {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  background: var(--primary, #2563eb);
+  color: white;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: var(--gray, #64748b);
+}
+
+.comment-text {
+  color: var(--gray, #64748b);
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .comment-text {
+  color: var(--text-secondary);
+}
+
+/* ---------- Фото до/после ---------- */
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.photo-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.2s;
+}
+
+.photo-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.photo-item img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-label {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.photo-label.before {
+  background: var(--warning, #f59e0b);
+  color: white;
+}
+
+.photo-label.after {
+  background: var(--success, #10b981);
+  color: white;
+}
+
+/* ---------- Калькулятор ---------- */
+.calculator-card {
+  background: linear-gradient(135deg, var(--primary, #2563eb) 0%, var(--primary-dark, #1d4ed8) 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.calculator-total {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+/* ---------- Сравнение услуг ---------- */
+.compare-bar {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+[data-theme="dark"] .compare-bar {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* ---------- Напоминания ---------- */
+.reminder-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--warning, #f59e0b);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ---------- Печать ---------- */
+@media print {
+  .no-print,
+  .sidebar,
+  .navbar,
+  .theme-toggle,
+  .btn:not(.print-btn),
+  .compare-bar,
+  .reminder-badge,
+  .admin-chat,
+  .chat-widget {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  
+  .container {
+    max-width: 100% !important;
+  }
+  
+  .data-table {
+    color: black !important;
+  }
+  
+  .data-table thead th {
+    background: #f0f0f0 !important;
+    color: black !important;
+  }
+}
+
+/* ---------- Адаптивность ---------- */
+@media (max-width: 768px) {
+  .photo-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .compare-bar {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+}

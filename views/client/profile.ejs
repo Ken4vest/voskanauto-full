@@ -1,88 +1,339 @@
-<div class="cards-grid">
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i class="fas fa-user" style="color:var(--primary);margin-right:8px"></i>Мой профиль</div>
-    </div>
-    <div class="card-body">
-      <form method="POST" action="/client/profile">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">ФИО</label>
-            <input type="text" name="full_name" class="form-input" value="<%= user && user.full_name ? user.full_name : '' %>" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" value="<%= user && user.email ? user.email : '' %>" disabled style="background:var(--gray-light)">
-          </div>
+<div class="profile-page">
+  <!-- ШАПКА ПРОФИЛЯ -->
+  <div class="profile-header">
+    <div class="profile-cover"></div>
+    <div class="profile-info">
+      <div class="profile-avatar">
+        <div class="avatar-ring">
+          <span class="avatar-initials"><%= user && user.full_name ? user.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'КЛ' %></span>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Телефон</label>
-            <input type="text" name="phone" class="form-input" value="<%= user && user.phone ? user.phone : '' %>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Скидка</label>
-            <input type="text" class="form-input" value="<%= user && user.discount_percent ? user.discount_percent : 0 %>%" disabled style="background:var(--gray-light)">
-          </div>
+        <div class="avatar-status online" title="Онлайн"></div>
+      </div>
+      <div class="profile-details">
+        <h1 class="profile-name"><%= user && user.full_name ? user.full_name : 'Клиент' %></h1>
+        <p class="profile-email"><i class="fas fa-envelope"></i> <%= user && user.email ? user.email : '' %></p>
+        <div class="profile-badges">
+          <% if (user && user.company_name) { %>
+            <span class="profile-badge company"><i class="fas fa-building"></i> Юр. лицо</span>
+          <% } else { %>
+            <span class="profile-badge client"><i class="fas fa-user"></i> Физ. лицо</span>
+          <% } %>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Бонусные баллы</label>
-            <input type="text" class="form-input" value="<%= user && user.bonus_points ? user.bonus_points : 0 %>" disabled style="background:var(--gray-light)">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Тип</label>
-            <input type="text" class="form-input" value="<%= user && user.company_name ? 'Юр. лицо' : 'Физ. лицо' %>" disabled style="background:var(--gray-light)">
-          </div>
-        </div>
-        <% if (user && user.company_name) { %>
-        <div class="form-group">
-          <label class="form-label">Название компании</label>
-          <input type="text" name="company_name" class="form-input" value="<%= user.company_name %>">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">ИНН</label>
-            <input type="text" name="inn" class="form-input" value="<%= user.inn || '' %>">
-          </div>
-          <div class="form-group">
-            <label class="form-label">КПП</label>
-            <input type="text" name="kpp" class="form-input" value="<%= user.kpp || '' %>">
-          </div>
-        </div>
-        <% } %>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Сохранить изменения</button>
-      </form>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</div>
-      <div class="card-actions"><a href="/client/cars" class="btn btn-outline btn-sm">Управлять</a></div>
+  <!-- СТАТИСТИКА -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-car"></i></div>
+      <div class="stat-value"><%= cars ? cars.length : 0 %></div>
+      <div class="stat-label">Автомобилей</div>
     </div>
-    <div class="card-body" style="padding:0">
-      <% if (cars && cars.length > 0) { %>
-      <table class="data-table">
-        <thead><tr><th>Марка</th><th>Модель</th><th>Год</th><th>Гос. номер</th></tr></thead>
-        <tbody>
-          <% cars.forEach(car => { %>
-          <tr>
-            <td><%= car.brand || '—' %></td>
-            <td><%= car.model || '—' %></td>
-            <td><%= car.year || '—' %></td>
-            <td><span class="car-plate"><%= car.license_plate || '—' %></span></td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-      <% } else { %>
-      <div class="empty-state" style="padding:24px">
-        <i class="fas fa-car"></i>
-        <h3>Нет автомобилей</h3>
-        <p><a href="/client/cars">Добавьте первый автомобиль</a></p>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+      <div class="stat-value"><%= typeof ordersCount !== 'undefined' ? ordersCount : 0 %></div>
+      <div class="stat-label">Заказов</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-star"></i></div>
+      <div class="stat-value"><%= typeof reviewsCount !== 'undefined' ? reviewsCount : 0 %></div>
+      <div class="stat-label">Отзывов</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="stat-value"><%= typeof appointmentsCount !== 'undefined' ? appointmentsCount : 0 %></div>
+      <div class="stat-label">Записей</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+      <div class="stat-value">₽<%= typeof totalSpent !== 'undefined' ? totalSpent.toLocaleString() : '0' %></div>
+      <div class="stat-label">Потрачено</div>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="profile-main">
+      <!-- РЕДАКТИРОВАНИЕ ПРОФИЛЯ -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-user-edit" style="color:var(--primary);margin-right:8px"></i>Личные данные</div>
+          <span class="card-subtitle">Редактируйте информацию о себе</span>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="/client/profile" class="profile-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> ФИО</label>
+                <input type="text" name="full_name" class="form-input" value="<%= user && user.full_name ? user.full_name : '' %>" required placeholder="Иванов Иван Иванович">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" class="form-input" value="<%= user && user.email ? user.email : '' %>" disabled style="background:#f8fafc">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-phone"></i> Телефон</label>
+                <input type="tel" name="phone" class="form-input" value="<%= user && user.phone ? user.phone : '' %>" placeholder="+7 (999) 000-00-00">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fas fa-id-card"></i> Тип клиента</label>
+                <div class="form-input-static"><%= user && user.company_name ? 'Юридическое лицо' : 'Физическое лицо' %></div>
+              </div>
+            </div>
+            <% if (user && user.company_name) { %>
+            <div class="company-section">
+              <div class="section-divider">
+                <span><i class="fas fa-building"></i> Данные компании</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label class="form-label">Название компании</label>
+                  <input type="text" name="company_name" class="form-input" value="<%= user.company_name %>">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ИНН</label>
+                  <input type="text" name="inn" class="form-input" value="<%= user.inn || '' %>" placeholder="1234567890">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">КПП</label>
+                  <input type="text" name="kpp" class="form-input" value="<%= user.kpp || '' %>" placeholder="123456789">
+                </div>
+              </div>
+            </div>
+            <% } %>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Сохранить изменения
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-      <% } %>
+
+      <!-- БЕЗОПАСНОСТЬ -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-shield-alt" style="color:var(--success);margin-right:8px"></i>Безопасность</div>
+        </div>
+        <div class="card-body">
+          <div class="security-item">
+            <div class="security-info">
+              <div class="security-title"><i class="fas fa-key"></i> Пароль</div>
+              <div class="security-desc">Последнее изменение: недавно</div>
+            </div>
+            <button class="btn btn-outline" onclick="alert('Функция в разработке')">
+              <i class="fas fa-edit"></i> Изменить
+            </button>
+          </div>
+          <div class="security-item">
+            <div class="security-info">
+              <div class="security-title"><i class="fas fa-mobile-alt"></i> Двухфакторная аутентификация</div>
+              <div class="security-desc">Дополнительная защита аккаунта</div>
+            </div>
+            <button class="btn btn-outline" onclick="alert('Функция в разработке')">
+              <i class="fas fa-toggle-off"></i> Включить
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="profile-sidebar">
+      <!-- АВТОМОБИЛИ -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</div>
+          <a href="/client/cars" class="btn btn-outline btn-sm">Управлять</a>
+        </div>
+        <div class="card-body" style="padding:0">
+          <% if (cars && cars.length > 0) { %>
+          <div class="cars-list">
+            <% cars.forEach(car => { %>
+            <div class="car-item">
+              <div class="car-icon">
+                <i class="fas fa-car"></i>
+              </div>
+              <div class="car-info">
+                <div class="car-name"><%= car.brand || '—' %> <%= car.model || '—' %></div>
+                <div class="car-meta">
+                  <span class="car-plate"><%= car.license_plate || '—' %></span>
+                  <span class="car-year"><%= car.year || '' %></span>
+                  <% if (car.mileage) { %>
+                  <span class="car-mileage"><i class="fas fa-tachometer-alt"></i> <%= car.mileage.toLocaleString() %> км</span>
+                  <% } %>
+                </div>
+              </div>
+              <a href="/client/cars" class="car-action"><i class="fas fa-chevron-right"></i></a>
+            </div>
+            <% }) %>
+          </div>
+          <% } else { %>
+          <div class="empty-state-compact">
+            <i class="fas fa-car"></i>
+            <p>Нет автомобилей</p>
+            <a href="/client/cars" class="btn btn-primary btn-sm">Добавить</a>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-bolt" style="color:var(--secondary);margin-right:8px"></i>Быстрые действия</div>
+        </div>
+        <div class="card-body">
+          <div class="quick-actions">
+            <a href="/client/services" class="quick-action">
+              <div class="quick-icon" style="background:var(--primary-light);color:var(--primary)"><i class="fas fa-wrench"></i></div>
+              <span>Записаться на сервис</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a href="/client/orders" class="quick-action">
+              <div class="quick-icon" style="background:#d1fae5;color:var(--success)"><i class="fas fa-clipboard-list"></i></div>
+              <span>Мои заказы</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a href="/client/parts" class="quick-action">
+              <div class="quick-icon" style="background:#fef3c7;color:var(--warning)"><i class="fas fa-cogs"></i></div>
+              <span>Запчасти и аксессуары</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a href="/client/invoices" class="quick-action">
+              <div class="quick-icon" style="background:#e0e7ff;color:#4338ca"><i class="fas fa-file-invoice"></i></div>
+              <span>Оплатить счёт</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR-КОД -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-qrcode" style="color:var(--primary);margin-right:8px"></i>Быстрый доступ</div>
+        </div>
+        <div class="card-body">
+          <div class="qr-section">
+            <div class="qr-placeholder">
+              <i class="fas fa-qrcode"></i>
+            </div>
+            <div class="qr-info">
+              <div class="qr-title">QR-код личного кабинета</div>
+              <div class="qr-desc">Отсканируйте для быстрого доступа с телефона</div>
+              <button class="btn btn-outline btn-sm" onclick="alert('QR-код будет сгенерирован при деплое')">
+                <i class="fas fa-download"></i> Скачать
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+.profile-page{max-width:1200px;margin:0 auto}
+.profile-header{position:relative;margin-bottom:24px;border-radius:var(--radius);overflow:hidden;background:var(--white);box-shadow:var(--shadow)}
+.profile-cover{height:140px;background:linear-gradient(135deg,var(--primary),#4f46e5,var(--primary-dark));position:relative}
+.profile-cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to top,rgba(0,0,0,0.1),transparent)}
+.profile-info{padding:0 24px 24px;display:flex;align-items:flex-end;gap:20px;position:relative;margin-top:-50px}
+.profile-avatar{position:relative;flex-shrink:0}
+.avatar-ring{width:100px;height:100px;border-radius:50%;background:var(--white);padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.avatar-initials{width:92px;height:92px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:700}
+.avatar-status{position:absolute;bottom:8px;right:8px;width:16px;height:16px;border-radius:50%;border:3px solid var(--white)}
+.avatar-status.online{background:var(--success)}
+.avatar-status.offline{background:var(--gray)}
+.profile-details{padding-bottom:4px;flex:1}
+.profile-name{font-size:24px;font-weight:700;margin-bottom:4px;color:var(--dark)}
+.profile-email{font-size:14px;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.profile-badges{display:flex;gap:8px;flex-wrap:wrap}
+.profile-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.profile-badge.client{background:#dbeafe;color:#1d4ed8}
+.profile-badge.company{background:#e0e7ff;color:#4338ca}
+
+.stats-bar{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);padding:20px 24px;display:flex;align-items:center;justify-content:space-around;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:100px}
+.stat-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--primary-light);color:var(--primary)}
+.stat-value{font-size:22px;font-weight:700;color:var(--dark)}
+.stat-label{font-size:12px;color:var(--gray);font-weight:500}
+.stat-divider{width:1px;height:40px;background:var(--gray-border)}
+
+.profile-grid{display:grid;grid-template-columns:1fr 380px;gap:24px}
+.profile-card{border:none;box-shadow:var(--shadow)}
+.profile-card .card-header{padding:20px 24px}
+.profile-card .card-header .card-subtitle{font-size:12px;color:var(--gray);margin-top:2px;font-weight:400}
+.profile-card .card-body{padding:24px}
+
+.profile-form .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:0}
+.form-group.full-width{grid-column:1/-1}
+.form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--dark);display:flex;align-items:center;gap:6px}
+.form-label i{color:var(--gray);font-size:12px}
+.form-input{width:100%;padding:10px 14px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:all .2s;background:var(--white)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.form-input-static{padding:10px 14px;background:#f8fafc;border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--dark);border:1px solid var(--gray-border)}
+
+.company-section{margin-top:20px}
+.section-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--gray);font-size:13px;font-weight:500}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--gray-border)}
+.section-divider span{white-space:nowrap;display:flex;align-items:center;gap:6px}
+
+.form-actions{margin-top:24px;padding-top:20px;border-top:1px solid var(--gray-border)}
+.btn-lg{padding:12px 24px;font-size:14px}
+
+.security-item{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--gray-border)}
+.security-item:last-child{border-bottom:none;padding-bottom:0}
+.security-title{font-size:14px;font-weight:600;color:var(--dark);display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.security-title i{color:var(--primary);font-size:16px}
+.security-desc{font-size:12px;color:var(--gray)}
+
+.cars-list{padding:0}
+.car-item{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--gray-border);transition:background .2s}
+.car-item:last-child{border-bottom:none}
+.car-item:hover{background:#f8fafc}
+.car-icon{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:16px}
+.car-info{flex:1;min-width:0}
+.car-name{font-size:14px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.car-meta{display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap}
+.car-plate{background:var(--primary-light);color:var(--primary);padding:1px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.car-year,.car-mileage{font-size:12px;color:var(--gray)}
+.car-mileage i{font-size:10px;margin-right:2px}
+.car-action{color:var(--gray);font-size:12px;padding:4px}
+.car-action:hover{color:var(--primary)}
+
+.empty-state-compact{text-align:center;padding:24px;color:var(--gray)}
+.empty-state-compact i{font-size:32px;margin-bottom:8px;opacity:.3;display:block}
+.empty-state-compact p{font-size:13px;margin-bottom:12px}
+
+.quick-actions{display:flex;flex-direction:column;gap:8px}
+.quick-action{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);text-decoration:none;color:var(--dark);transition:all .2s;border:1px solid transparent}
+.quick-action:hover{background:var(--gray-light);border-color:var(--gray-border)}
+.quick-action span{flex:1;font-size:14px;font-weight:500}
+.quick-action .fa-arrow-right{color:var(--gray);font-size:12px;opacity:0;transition:all .2s}
+.quick-action:hover .fa-arrow-right{opacity:1;color:var(--primary)}
+.quick-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px}
+
+.qr-section{display:flex;align-items:center;gap:16px}
+.qr-placeholder{width:80px;height:80px;background:#f8fafc;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;border:2px dashed var(--gray-border);color:var(--gray);font-size:32px}
+.qr-info{flex:1}
+.qr-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.qr-desc{font-size:12px;color:var(--gray);margin-bottom:10px}
+
+@media(max-width:768px){
+  .profile-grid{grid-template-columns:1fr}
+  .profile-info{flex-direction:column;align-items:center;text-align:center;padding:0 16px 20px}
+  .profile-badges{justify-content:center}
+  .stats-bar{gap:12px}
+  .stat-divider{display:none}
+  .stat-item{min-width:80px}
+  .profile-form .form-grid{grid-template-columns:1fr}
+  .qr-section{flex-direction:column;text-align:center}
+}
+</style>

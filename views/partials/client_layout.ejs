@@ -7,29 +7,64 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--success:#10b981;--danger:#ef4444;--gray:#64748b;--gray-light:#f1f5f9;--gray-border:#e2e8f0;--dark:#1e293b;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,0.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1);--radius:12px;--radius-sm:8px}
+:root{
+  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;
+  --secondary:#f59e0b;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;
+  --info:#3b82f6;--dark:#1e293b;--gray:#64748b;--gray-light:#f1f5f9;
+  --gray-border:#e2e8f0;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);
+  --radius:12px;--radius-sm:8px;
+}
+[data-theme="dark"]{
+  --dark:#f1f5f9;--gray:#94a3b8;--gray-light:#1e293b;--gray-border:#334155;
+  --white:#0f172a;--shadow:0 1px 3px rgba(0,0,0,0.3);
+  --primary-light:rgba(37,99,235,0.2);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-height:1.6}
-.client-header{height:64px;background:var(--white);border-bottom:1px solid var(--gray-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-height:1.6;transition:background 0.3s,color 0.3s}
+[data-theme="dark"] body{background:#0f172a;color:#f1f5f9}
+
+.client-header{height:64px;background:var(--white);border-bottom:1px solid var(--gray-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50;transition:background 0.3s,border-color 0.3s}
+[data-theme="dark"] .client-header{background:#0f172a;border-color:#334155}
 .client-header-left{display:flex;align-items:center;gap:16px}
 .client-logo{font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-dark));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.client-nav{display:flex;gap:4px}
-.client-nav a{padding:8px 16px;border-radius:var(--radius-sm);text-decoration:none;color:var(--gray);font-size:14px;font-weight:500;transition:all .2s}
+.client-nav{display:flex;gap:4px;align-items:center}
+.client-nav a{padding:8px 14px;border-radius:var(--radius-sm);text-decoration:none;color:var(--gray);font-size:13px;font-weight:500;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap;position:relative}
 .client-nav a:hover{color:var(--dark);background:var(--gray-light)}
 .client-nav a.active{color:var(--primary);background:var(--primary-light)}
+.client-nav a.active::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--primary)}
 .client-header-right{display:flex;align-items:center;gap:12px}
-.client-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px}
-.client-content{max-width:1200px;margin:0 auto;padding:24px}
-.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);overflow:hidden;margin-bottom:20px}
+
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gray-border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:rotate(20deg)}
+[data-theme="dark"] .theme-toggle{background:#1e293b;border-color:#334155}
+
+.notif-link{color:var(--gray);text-decoration:none;position:relative;font-size:18px;transition:color 0.2s}
+.notif-link:hover{color:var(--primary)}
+.notif-badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;animation:pulse-badge 2s infinite}
+@keyframes pulse-badge{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+.logout-link{color:var(--gray);text-decoration:none;font-size:18px;transition:color 0.2s}
+.logout-link:hover{color:var(--danger)}
+
+.client-content{max-width:1200px;margin:0 auto;padding:24px;animation:fadeIn 0.4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-border);overflow:hidden;margin-bottom:20px;transition:background 0.3s,border-color 0.3s}
+[data-theme="dark"] .card{background:#1e293b;border-color:#334155}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--gray-border);display:flex;justify-content:space-between;align-items:center}
 .card-title{font-size:16px;font-weight:600}
 .card-body{padding:20px}
 .btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
 .btn-primary{background:var(--primary);color:white}
-.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.3)}
 .btn-outline{background:transparent;border:1px solid var(--gray-border);color:var(--dark)}
 .btn-outline:hover{background:var(--gray-light)}
 .btn-sm{padding:6px 12px;font-size:12px}
+.btn-success{background:var(--success);color:white}
+.btn-success:hover{background:#059669}
+.btn-danger{background:var(--danger);color:white}
+.btn-danger:hover{background:#dc2626}
 .data-table{width:100%;border-collapse:collapse}
 .data-table th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);border-bottom:1px solid var(--gray-border);background:var(--gray-light)}
 .data-table td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--gray-border);vertical-align:middle}
@@ -43,7 +78,8 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-he
 .service-card-footer{display:flex;justify-content:space-between;align-items:center}
 .service-card-time{font-size:12px;color:var(--gray)}
 .filters-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.filter-input{padding:10px 14px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;outline:none;min-width:200px}
+.filter-input{padding:10px 14px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;outline:none;min-width:200px;transition:all 0.2s;background:var(--white);color:var(--dark)}
+[data-theme="dark"] .filter-input{background:#1e293b;border-color:#334155}
 .filter-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--gray-light);color:var(--gray)}
 .badge-info{background:#dbeafe;color:#1d4ed8}
@@ -55,10 +91,11 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-he
 
 /* ЧАТ-ВИДЖЕТ */
 .chat-widget{position:fixed;bottom:24px;right:24px;z-index:1000}
-.chat-button{width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.4);font-size:24px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-button{width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.4);font-size:24px;transition:all .2s;display:flex;align-items:center;justify-content:center;animation:float 3s ease-in-out infinite}
 .chat-button:hover{background:var(--primary-dark);transform:scale(1.1)}
 .chat-window{position:fixed;bottom:100px;right:24px;width:360px;height:480px;background:#fff;border-radius:var(--radius);box-shadow:0 10px 40px rgba(0,0,0,0.2);display:none;flex-direction:column;overflow:hidden;z-index:1001}
-.chat-window.active{display:flex}
+.chat-window.active{display:flex;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .chat-header{background:var(--primary);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
 .chat-header-title{font-weight:600;font-size:14px}
 .chat-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
@@ -75,26 +112,63 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:var(--dark);line-he
 .chat-send-btn{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .chat-send-btn:hover{background:var(--primary-dark)}
 
-@media(max-width:768px){.client-nav{display:none}.service-grid{grid-template-columns:1fr}.chat-window{width:calc(100vw - 48px);right:24px}}
+.menu-toggle-mobile{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--dark);margin-right:8px}
+
+@media(max-width:768px){
+  .client-nav{display:none;position:fixed;top:64px;left:0;right:0;background:var(--white);border-bottom:1px solid var(--gray-border);padding:8px 16px;flex-direction:column;gap:4px;z-index:49;box-shadow:var(--shadow-lg)}
+  [data-theme="dark"] .client-nav{background:#0f172a;border-color:#334155}
+  .client-nav.active{display:flex;animation:slideDown 0.3s ease}
+  @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+  .client-nav a{width:100%;padding:12px 16px}
+  .menu-toggle-mobile{display:flex !important}
+  .service-grid{grid-template-columns:1fr}
+  .chat-window{width:calc(100vw - 48px);right:24px}
+}
 </style>
 </head>
-<body>
+<body data-theme="<%= typeof userTheme !== 'undefined' ? userTheme : 'light' %>">
 <header class="client-header">
   <div class="client-header-left">
+    <button class="menu-toggle-mobile" onclick="toggleMobileNav()" aria-label="Меню">
+      <i class="fas fa-bars"></i>
+    </button>
     <div class="client-logo"><i class="fas fa-car"></i> ВосканАвто</div>
-    <nav class="client-nav">
-      <a href="/client/dashboard" class="<%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>"><i class="fas fa-home"></i> Главная</a>
-      <a href="/client/cars" class="<%= (typeof activePage !== 'undefined' && activePage === 'cars') ? 'active' : '' %>"><i class="fas fa-car"></i> Авто</a>
-      <a href="/client/services" class="<%= (typeof activePage !== 'undefined' && activePage === 'services') ? 'active' : '' %>"><i class="fas fa-wrench"></i> Услуги</a>
-      <a href="/client/orders" class="<%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'active' : '' %>"><i class="fas fa-clipboard-list"></i> Заказы</a>
-      <a href="/client/appointments" class="<%= (typeof activePage !== 'undefined' && activePage === 'appointments') ? 'active' : '' %>"><i class="fas fa-calendar"></i> Записи</a>
-      <a href="/client/cart" class="<%= (typeof activePage !== 'undefined' && activePage === 'cart') ? 'active' : '' %>"><i class="fas fa-shopping-cart"></i> Корзина</a>
-      <a href="/client/profile" class="<%= (typeof activePage !== 'undefined' && activePage === 'profile') ? 'active' : '' %>"><i class="fas fa-user"></i> Профиль</a>
+    <nav class="client-nav" id="clientNav">
+      <a href="/client/dashboard" class="<%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>">
+        <i class="fas fa-home"></i> Главная
+      </a>
+      <a href="/client/cars" class="<%= (typeof activePage !== 'undefined' && activePage === 'cars') ? 'active' : '' %>">
+        <i class="fas fa-car"></i> Авто
+      </a>
+      <a href="/client/services" class="<%= (typeof activePage !== 'undefined' && activePage === 'services') ? 'active' : '' %>">
+        <i class="fas fa-wrench"></i> Услуги
+      </a>
+      <a href="/client/parts" class="<%= (typeof activePage !== 'undefined' && activePage === 'parts') ? 'active' : '' %>">
+        <i class="fas fa-cogs"></i> Запчасти
+      </a>
+      <a href="/client/orders" class="<%= (typeof activePage !== 'undefined' && activePage === 'orders') ? 'active' : '' %>">
+        <i class="fas fa-clipboard-list"></i> Заказы
+      </a>
+      <a href="/client/appointments" class="<%= (typeof activePage !== 'undefined' && activePage === 'appointments') ? 'active' : '' %>">
+        <i class="fas fa-calendar"></i> Записи
+      </a>
+      <a href="/client/cart" class="<%= (typeof activePage !== 'undefined' && activePage === 'cart') ? 'active' : '' %>">
+        <i class="fas fa-shopping-cart"></i> Корзина
+      </a>
+      <a href="/client/profile" class="<%= (typeof activePage !== 'undefined' && activePage === 'profile') ? 'active' : '' %>">
+        <i class="fas fa-user"></i> Профиль
+      </a>
     </nav>
   </div>
   <div class="client-header-right">
-    <a href="/client/notifications" style="color:var(--gray);text-decoration:none;position:relative"><i class="fas fa-bell"></i></a>
-    <a href="/logout" style="color:var(--gray);text-decoration:none"><i class="fas fa-sign-out-alt"></i></a>
+    <button id="themeToggle" class="theme-toggle" title="Переключить тему" onclick="toggleTheme()">☀️</button>
+    <a href="/client/notifications" class="notif-link">
+      <i class="fas fa-bell"></i>
+      <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %>
+      <span class="notif-badge"><%= unreadCount %></span>
+      <% } %>
+    </a>
+    <a href="/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i></a>
   </div>
 </header>
 <div class="client-content">
@@ -132,20 +206,40 @@ function toggleChat() {
   }
 }
 
+function toggleMobileNav() {
+  document.getElementById('clientNav').classList.toggle('active');
+}
+
+function toggleTheme() {
+  const body = document.body;
+  const currentTheme = body.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  body.setAttribute('data-theme', newTheme);
+  document.getElementById('themeToggle').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('theme', newTheme);
+  fetch('/api/theme', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({theme: newTheme})
+  }).catch(() => {});
+}
+
+// Восстановление темы из localStorage
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  document.body.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+}
+
 function sendChatMessage() {
   var input = document.getElementById('chatInput');
   var text = input.value.trim();
   if (!text) return;
-
   var messages = document.getElementById('chatMessages');
   var time = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
-
-  // Сообщение пользователя
   messages.innerHTML += '<div class="chat-message sent"><div class="chat-message-bubble">' + escapeHtml(text) + '</div><div class="chat-message-time">' + time + '</div></div>';
   input.value = '';
   messages.scrollTop = messages.scrollHeight;
-
-  // Автоответ бота (имитация)
   setTimeout(function() {
     var responses = [
       'Спасибо за обращение! Наш менеджер скоро ответит.',
@@ -164,6 +258,26 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+if ('Notification' in window && Notification.permission === 'default') {
+  setTimeout(() => { Notification.requestPermission(); }, 3000);
+}
+
+function sendBrowserNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body: body, icon: '/favicon.ico', badge: '/favicon.ico' });
+  }
+}
+
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/notifications/unread');
+    const data = await res.json();
+    if (data.count > 0) {
+      sendBrowserNotification('ВосканАвто', 'У вас ' + data.count + ' новых уведомлений');
+    }
+  } catch(e) {}
+}, 30000);
 </script>
 </body>
 </html>

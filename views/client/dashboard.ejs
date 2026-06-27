@@ -1,73 +1,123 @@
-<h2 style="margin-bottom:20px">👋 Добро пожаловать, <%= user.full_name %>!</h2>
-
-<!-- УВЕДОМЛЕНИЯ -->
-<% if (notifications && notifications.filter(n => !n.is_read).length > 0) { %>
-<div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
-  <i class="fas fa-bell" style="color:var(--primary);font-size:20px"></i>
-  <div style="flex:1">
-    <div style="font-weight:600;font-size:14px;color:#1e40af">У вас <%= notifications.filter(n => !n.is_read).length %> новых уведомлений</div>
-    <div style="font-size:12px;color:#3b82f6;margin-top:2px">Проверьте статус ваших заказов</div>
-  </div>
-  <a href="/client/notifications" style="background:var(--primary);color:#fff;padding:8px 16px;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:500">Посмотреть</a>
-</div>
-<% } %>
-
-<!-- СТАТУС ТЕКУЩЕГО ЗАКАЗА -->
-<% if (orders && orders.length > 0 && orders[0].status !== 'completed') { %>
-<div class="card" style="margin-bottom:20px;border-left:4px solid var(--primary)">
-  <div class="card-header">
-    <div class="card-title"><i class="fas fa-spinner fa-spin" style="color:var(--primary);margin-right:8px"></i>Активный заказ</div>
-    <a href="/client/orders/<%= orders[0].id %>" class="btn btn-outline btn-sm">Подробнее</a>
-  </div>
-  <div class="card-body">
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-      <div style="width:60px;height:60px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:24px">
-        <i class="fas fa-car"></i>
-      </div>
-      <div>
-        <div style="font-weight:600;font-size:16px">Заказ #<%= orders[0].order_number %></div>
-        <div style="font-size:13px;color:var(--gray)"><%= orders[0].brand ? orders[0].brand + ' ' + orders[0].model : 'Автомобиль не указан' %></div>
-      </div>
-      <div style="margin-left:auto;text-align:right">
-        <div style="font-size:24px;font-weight:700;color:var(--primary)">₽<%= (orders[0].total_amount || 0).toLocaleString() %></div>
-        <div style="font-size:12px;color:var(--gray)"><%= orders[0].created_at ? new Date(orders[0].created_at).toLocaleDateString('ru-RU') : '' %></div>
-      </div>
-    </div>
-    <!-- Прогресс-бар статуса -->
-    <div style="display:flex;gap:4px;margin-bottom:8px">
-      <div style="flex:1;height:8px;background:<%= ['created','in_progress','waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'var(--primary)' : '#e5e7eb' %>;border-radius:4px"></div>
-      <div style="flex:1;height:8px;background:<%= ['in_progress','waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'var(--primary)' : '#e5e7eb' %>;border-radius:4px"></div>
-      <div style="flex:1;height:8px;background:<%= ['waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'var(--primary)' : '#e5e7eb' %>;border-radius:4px"></div>
-      <div style="flex:1;height:8px;background:<%= ['ready','completed'].indexOf(orders[0].status) >= 0 ? 'var(--primary)' : '#e5e7eb' %>;border-radius:4px"></div>
-      <div style="flex:1;height:8px;background:<%= orders[0].status === 'completed' ? 'var(--success)' : '#e5e7eb' %>;border-radius:4px"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray)">
-      <span>Создан</span><span>В работе</span><span>Ожидание</span><span>Готов</span><span>Выдан</span>
+<div class="dashboard-container">
+  <!-- ПРИВЕТСТВИЕ -->
+  <div class="welcome-section">
+    <div class="welcome-left">
+      <h1 class="welcome-title">
+        <span class="wave">👋</span> Добро пожаловать, <span class="user-name"><%= user.full_name %></span>!
+      </h1>
+      <p class="welcome-subtitle">Ваш персональный автосервис всегда на связи</p>
     </div>
   </div>
-</div>
-<% } %>
 
-<!-- МОИ АВТОМОБИЛИ -->
-<div class="card">
-  <div class="card-header">
-    <div class="card-title"><i class="fas fa-car" style="color:var(--primary);margin-right:8px"></i>Мои автомобили</div>
-    <a href="/client/cars" class="btn btn-outline btn-sm">Управлять</a>
+  <!-- УВЕДОМЛЕНИЯ -->
+  <% if (notifications && notifications.filter(n => !n.is_read).length > 0) { %>
+  <div class="notification-banner" id="notifBanner">
+    <div class="notif-icon"><i class="fas fa-bell"></i></div>
+    <div class="notif-text">
+      <strong>У вас <%= notifications.filter(n => !n.is_read).length %> новых уведомлений</strong>
+      <span>Проверьте статус ваших заказов</span>
+    </div>
+    <a href="/client/notifications" class="btn btn-primary btn-sm">Посмотреть</a>
+    <button class="notif-close" onclick="document.getElementById('notifBanner').style.display='none'">×</button>
   </div>
-  <div class="card-body">
+  <% } %>
+
+  <!-- СТАТУС ТЕКУЩЕГО ЗАКАЗА -->
+  <% if (orders && orders.length > 0 && orders[0].status !== 'completed') { %>
+  <div class="active-order-card">
+    <div class="order-card-header">
+      <div class="order-status-badge status-<%= orders[0].status %>">
+        <i class="fas fa-spinner fa-spin"></i> <%= orders[0].status === 'created' ? 'Создан' : orders[0].status === 'in_progress' ? 'В работе' : orders[0].status === 'waiting_parts' ? 'Ожидание' : 'Готов' %>
+      </div>
+      <a href="/client/orders/<%= orders[0].id %>" class="btn btn-outline btn-sm">Подробнее</a>
+    </div>
+    <div class="order-card-body">
+      <div class="order-car-info">
+        <div class="car-avatar"><i class="fas fa-car"></i></div>
+        <div class="car-details">
+          <div class="order-number">Заказ #<%= orders[0].order_number %></div>
+          <div class="car-name"><%= orders[0].brand ? orders[0].brand + ' ' + orders[0].model : 'Автомобиль не указан' %></div>
+        </div>
+        <div class="order-price">
+          <div class="price-value">₽<%= (orders[0].total_amount || 0).toLocaleString() %></div>
+          <div class="price-date"><%= orders[0].created_at ? new Date(orders[0].created_at).toLocaleDateString('ru-RU') : '' %></div>
+        </div>
+      </div>
+      <div class="order-timeline">
+        <div class="timeline-step <%= ['created','in_progress','waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>">
+          <div class="step-dot"></div>
+          <span>Создан</span>
+        </div>
+        <div class="timeline-line <%= ['in_progress','waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>"></div>
+        <div class="timeline-step <%= ['in_progress','waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>">
+          <div class="step-dot"></div>
+          <span>В работе</span>
+        </div>
+        <div class="timeline-line <%= ['waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>"></div>
+        <div class="timeline-step <%= ['waiting_parts','ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>">
+          <div class="step-dot"></div>
+          <span>Ожидание</span>
+        </div>
+        <div class="timeline-line <%= ['ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>"></div>
+        <div class="timeline-step <%= ['ready','completed'].indexOf(orders[0].status) >= 0 ? 'active' : '' %>">
+          <div class="step-dot"></div>
+          <span>Готов</span>
+        </div>
+        <div class="timeline-line <%= orders[0].status === 'completed' ? 'active' : '' %>"></div>
+        <div class="timeline-step <%= orders[0].status === 'completed' ? 'active completed' : '' %>">
+          <div class="step-dot"></div>
+          <span>Выдан</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- ПОПУЛЯРНЫЕ УСЛУГИ -->
+  <% if (typeof popularServices !== 'undefined' && popularServices && popularServices.length > 0) { %>
+  <div class="section-header">
+    <h2><i class="fas fa-fire"></i> Популярные услуги</h2>
+    <a href="/client/services" class="link-arrow">Все услуги <i class="fas fa-arrow-right"></i></a>
+  </div>
+  <div class="popular-grid">
+    <% popularServices.forEach(function(s) { %>
+    <a href="/client/services" class="popular-card">
+      <div class="popular-icon"><i class="fas fa-wrench"></i></div>
+      <div class="popular-name"><%= s.name %></div>
+      <div class="popular-price">₽<%= ((s.labor_hours || 0) * (s.hourly_rate || 2500)).toLocaleString() %></div>
+      <div class="popular-popularity">
+        <div class="pop-bar"><div class="pop-fill" style="width:<%= s.popularity %>"></div></div>
+        <span><%= s.popularity %>%</span>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+  <% } %>
+
+  <!-- МОИ АВТОМОБИЛИ -->
+  <div class="section-header">
+    <h2><i class="fas fa-car"></i> Мои автомобили</h2>
+    <a href="/client/cars" class="link-arrow">Управлять <i class="fas fa-arrow-right"></i></a>
+  </div>
+  <div class="cars-section">
     <% if (cars && cars.length > 0) { %>
-      <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div class="cars-grid">
         <% cars.forEach(car => { %>
-        <div style="background:var(--gray-light);padding:16px;border-radius:var(--radius);min-width:220px;flex:1;position:relative">
-          <div style="position:absolute;top:12px;right:12px;width:32px;height:32px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px">
-            <i class="fas fa-car"></i>
+        <div class="car-card">
+          <div class="car-card-header">
+            <div class="car-card-icon"><i class="fas fa-car"></i></div>
+            <div class="car-card-actions">
+              <a href="/client/services" class="btn-icon" title="Записаться"><i class="fas fa-wrench"></i></a>
+              <a href="/client/orders" class="btn-icon" title="История"><i class="fas fa-history"></i></a>
+            </div>
           </div>
-          <div style="font-weight:600;font-size:16px"><%= car.brand %> <%= car.model %></div>
-          <div style="font-size:13px;color:var(--gray);margin-top:4px"><%= car.license_plate || '—' %></div>
-          <div style="font-size:12px;color:var(--gray);margin-top:2px"><%= car.year || '' %> • <%= car.mileage ? car.mileage.toLocaleString() + ' км' : '' %></div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <a href="/client/services" class="btn btn-primary btn-sm"><i class="fas fa-wrench"></i> Записаться</a>
-            <a href="/client/orders" class="btn btn-outline btn-sm"><i class="fas fa-history"></i> История</a>
+          <div class="car-card-body">
+            <div class="car-card-name"><%= car.brand %> <%= car.model %></div>
+            <div class="car-card-plate"><%= car.license_plate || '—' %></div>
+            <div class="car-card-meta">
+              <span><%= car.year || '' %></span>
+              <% if (car.mileage) { %><span><i class="fas fa-tachometer-alt"></i> <%= car.mileage.toLocaleString() %> км</span><% } %>
+            </div>
           </div>
         </div>
         <% }) %>
@@ -76,19 +126,17 @@
       <div class="empty-state">
         <i class="fas fa-car"></i>
         <h3>Нет автомобилей</h3>
-        <p><a href="/client/cars" style="color:var(--primary)">Добавить первый автомобиль</a></p>
+        <p><a href="/client/cars">Добавить первый автомобиль</a></p>
       </div>
     <% } %>
   </div>
-</div>
 
-<!-- ПОСЛЕДНИЕ ЗАКАЗЫ -->
-<div class="card">
-  <div class="card-header">
-    <div class="card-title"><i class="fas fa-clipboard-list" style="color:var(--primary);margin-right:8px"></i>Последние заказы</div>
-    <a href="/client/orders" class="btn btn-outline btn-sm">Все заказы</a>
+  <!-- ПОСЛЕДНИЕ ЗАКАЗЫ -->
+  <div class="section-header">
+    <h2><i class="fas fa-clipboard-list"></i> Последние заказы</h2>
+    <a href="/client/orders" class="link-arrow">Все заказы <i class="fas fa-arrow-right"></i></a>
   </div>
-  <div class="card-body" style="padding:0">
+  <div class="orders-table-card">
     <table class="data-table">
       <thead>
         <tr><th>№</th><th>Дата</th><th>Услуги</th><th>Статус</th><th>Сумма</th><th></th></tr>
@@ -97,68 +145,223 @@
         <% if (orders && orders.length > 0) { %>
           <% orders.slice(0, 3).forEach(order => { %>
           <tr>
-            <td><a href="/client/orders/<%= order.id %>" style="color:var(--primary);text-decoration:none;font-weight:600">#<%= order.order_number %></a></td>
+            <td><a href="/client/orders/<%= order.id %>" class="order-link">#<%= order.order_number %></a></td>
             <td><%= order.created_at ? new Date(order.created_at).toLocaleDateString('ru-RU') : '—' %></td>
             <td><%= order.description || '—' %></td>
             <td>
-              <% if (order.status === 'created') { %><span class="badge badge-info">Создан</span>
-              <% } else if (order.status === 'in_progress') { %><span class="badge badge-warning">В работе</span>
-              <% } else if (order.status === 'ready') { %><span class="badge badge-success">Готов</span>
-              <% } else if (order.status === 'completed') { %><span class="badge">Выдан</span>
-              <% } else { %><span class="badge badge-danger">Отменён</span><% } %>
+              <% if (order.status === 'created') { %><span class="status-badge status-created">Создан</span>
+              <% } else if (order.status === 'in_progress') { %><span class="status-badge status-in_progress">В работе</span>
+              <% } else if (order.status === 'ready') { %><span class="status-badge status-ready">Готов</span>
+              <% } else if (order.status === 'completed') { %><span class="status-badge status-completed">Выдан</span>
+              <% } else { %><span class="status-badge status-cancelled">Отменён</span><% } %>
             </td>
             <td><strong>₽<%= (order.total_amount || 0).toLocaleString() %></strong></td>
-            <td><a href="/client/orders/<%= order.id %>" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a></td>
+            <td><a href="/client/orders/<%= order.id %>" class="btn-icon-sm"><i class="fas fa-eye"></i></a></td>
           </tr>
           <% }) %>
         <% } else { %>
-          <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--gray)">Нет заказов</td></tr>
+          <tr><td colspan="6" class="empty-cell">Нет заказов</td></tr>
         <% } %>
       </tbody>
     </table>
   </div>
+
+  <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+  <div class="section-header">
+    <h2><i class="fas fa-bolt"></i> Быстрые действия</h2>
+  </div>
+  <div class="quick-actions-grid">
+    <a href="/client/services" class="quick-action-card action-service">
+      <div class="quick-action-icon"><i class="fas fa-wrench"></i></div>
+      <span>Записаться на сервис</span>
+      <i class="fas fa-arrow-right quick-arrow"></i>
+    </a>
+    <a href="/client/parts" class="quick-action-card action-parts">
+      <div class="quick-action-icon"><i class="fas fa-cogs"></i></div>
+      <span>Запчасти и аксессуары</span>
+      <i class="fas fa-arrow-right quick-arrow"></i>
+    </a>
+    <a href="/client/appointments" class="quick-action-card action-appointments">
+      <div class="quick-action-icon"><i class="fas fa-calendar"></i></div>
+      <span>Мои записи</span>
+      <i class="fas fa-arrow-right quick-arrow"></i>
+    </a>
+    <a href="/client/invoices" class="quick-action-card action-invoices">
+      <div class="quick-action-icon"><i class="fas fa-file-invoice"></i></div>
+      <span>Оплатить счёт</span>
+      <i class="fas fa-arrow-right quick-arrow"></i>
+    </a>
+  </div>
+
+  <!-- QR-КОД -->
+  <div class="qr-card">
+    <div class="qr-icon"><i class="fas fa-qrcode"></i></div>
+    <div class="qr-info">
+      <div class="qr-title">Быстрый доступ</div>
+      <div class="qr-desc">Отсканируйте QR-код для быстрого входа в личный кабинет</div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="alert('QR-код будет сгенерирован при деплое')">
+      <i class="fas fa-download"></i> Скачать
+    </button>
+  </div>
 </div>
 
-<!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
-<div class="card">
-  <div class="card-header">
-    <div class="card-title"><i class="fas fa-bolt" style="color:var(--secondary);margin-right:8px"></i>Быстрые действия</div>
-  </div>
-  <div class="card-body">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-      <a href="/client/services" style="background:var(--primary);color:#fff;padding:16px;border-radius:var(--radius);text-align:center;text-decoration:none;transition:all .2s">
-        <i class="fas fa-wrench" style="font-size:24px;margin-bottom:8px;display:block"></i>
-        <span style="font-size:14px;font-weight:600">Записаться на сервис</span>
-      </a>
-      <a href="/client/appointments" style="background:var(--success);color:#fff;padding:16px;border-radius:var(--radius);text-align:center;text-decoration:none;transition:all .2s">
-        <i class="fas fa-calendar" style="font-size:24px;margin-bottom:8px;display:block"></i>
-        <span style="font-size:14px;font-weight:600">Мои записи</span>
-      </a>
-      <a href="/client/invoices" style="background:var(--secondary);color:#fff;padding:16px;border-radius:var(--radius);text-align:center;text-decoration:none;transition:all .2s">
-        <i class="fas fa-file-invoice" style="font-size:24px;margin-bottom:8px;display:block"></i>
-        <span style="font-size:14px;font-weight:600">Оплатить счёт</span>
-      </a>
-    </div>
-  </div>
-</div>
+<style>
+@keyframes wave-animation {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(20deg); }
+  75% { transform: rotate(-15deg); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+}
 
-<!-- QR-КОД ДЛЯ БЫСТРОГО ДОСТУПА -->
-<div class="card">
-  <div class="card-header">
-    <div class="card-title"><i class="fas fa-qrcode" style="color:var(--primary);margin-right:8px"></i>Быстрый доступ</div>
-  </div>
-  <div class="card-body">
-    <div style="display:flex;align-items:center;gap:20px">
-      <div style="width:120px;height:120px;background:var(--gray-light);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;border:2px dashed var(--gray-border)">
-        <i class="fas fa-qrcode" style="font-size:48px;color:var(--gray)"></i>
-      </div>
-      <div>
-        <div style="font-weight:600;margin-bottom:8px">QR-код для быстрого доступа</div>
-        <div style="font-size:13px;color:var(--gray);margin-bottom:12px">Отсканируйте код на телефоне, чтобы быстро открыть личный кабинет</div>
-        <button class="btn btn-outline btn-sm" onclick="alert('QR-код будет сгенерирован при деплое на хостинг')">
-          <i class="fas fa-download"></i> Скачать QR-код
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+.dashboard-container { animation: fadeInUp 0.5s ease; }
+
+.welcome-section {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+}
+.welcome-title { font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+.wave { display: inline-block; animation: wave-animation 2s ease-in-out infinite; }
+.user-name { background: linear-gradient(135deg, var(--primary), #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.welcome-subtitle { font-size: 14px; color: var(--gray); }
+
+.notification-banner {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, var(--primary-light), #e0e7ff);
+  border: 1px solid #bfdbfe; border-radius: var(--radius);
+  padding: 14px 18px; margin-bottom: 20px; animation: fadeInUp 0.4s ease;
+}
+.notif-icon { color: var(--primary); font-size: 20px; }
+.notif-text { flex: 1; }
+.notif-text strong { display: block; font-size: 14px; color: #1e40af; }
+.notif-text span { font-size: 12px; color: #3b82f6; }
+.notif-close { background: none; border: none; font-size: 20px; color: var(--gray); cursor: pointer; }
+
+.active-order-card {
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+  border: 1px solid var(--gray-border); overflow: hidden; margin-bottom: 24px;
+  border-left: 4px solid var(--primary); animation: fadeInUp 0.5s ease;
+}
+.order-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; border-bottom: 1px solid var(--gray-border);
+}
+.order-status-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.status-created { background: #dbeafe; color: #1d4ed8; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-waiting_parts { background: #fee2e2; color: #991b1b; }
+.status-ready { background: #d1fae5; color: #065f46; }
+.order-card-body { padding: 20px; }
+.order-car-info { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.car-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
+.car-details { flex: 1; }
+.order-number { font-size: 16px; font-weight: 700; color: var(--dark); }
+.car-name { font-size: 13px; color: var(--gray); margin-top: 2px; }
+.order-price { text-align: right; }
+.price-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+.price-date { font-size: 12px; color: var(--gray); }
+
+.order-timeline { display: flex; align-items: center; justify-content: space-between; }
+.timeline-step { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--gray); transition: all 0.3s; }
+.timeline-step .step-dot { width: 14px; height: 14px; border-radius: 50%; background: #e5e7eb; border: 2px solid #d1d5db; transition: all 0.3s; }
+.timeline-step.active { color: var(--primary); font-weight: 600; }
+.timeline-step.active .step-dot { background: var(--primary); border-color: var(--primary); animation: pulse-glow 2s infinite; }
+.timeline-step.completed .step-dot { background: var(--success); border-color: var(--success); }
+.timeline-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 8px; margin-bottom: 20px; transition: all 0.3s; }
+.timeline-line.active { background: linear-gradient(90deg, var(--primary), var(--success)); }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin: 28px 0 16px; }
+.section-header h2 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.link-arrow { color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 4px; transition: gap 0.2s; }
+.link-arrow:hover { gap: 8px; }
+
+.popular-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.popular-card {
+  background: var(--white); border: 1px solid var(--gray-border); border-radius: var(--radius);
+  padding: 18px; text-decoration: none; color: var(--dark); transition: all 0.3s;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.popular-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+.popular-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px; }
+.popular-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.popular-price { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+.popular-popularity { display: flex; align-items: center; gap: 8px; width: 100%; }
+.pop-bar { flex: 1; height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+.pop-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #7c3aed); border-radius: 2px; }
+.popular-popularity span { font-size: 10px; color: var(--gray); }
+
+.cars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.car-card {
+  background: var(--white); border: 1px solid var(--gray-border); border-radius: var(--radius);
+  padding: 16px; transition: all 0.3s;
+}
+.car-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.car-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.car-card-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.car-card-actions { display: flex; gap: 6px; }
+.btn-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--gray-light); color: var(--gray); display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 12px; transition: all 0.2s; }
+.btn-icon:hover { background: var(--primary); color: white; }
+.car-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.car-card-plate { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; margin-bottom: 8px; }
+.car-card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--gray); }
+.car-card-meta i { margin-right: 2px; }
+
+.orders-table-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--gray-border); overflow: hidden; margin-bottom: 24px; }
+.order-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.status-created { background: #dbeafe; color: #1d4ed8; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-ready { background: #d1fae5; color: #065f46; }
+.status-completed { background: #f3f4f6; color: #374151; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+.btn-icon-sm { color: var(--gray); text-decoration: none; font-size: 14px; }
+.btn-icon-sm:hover { color: var(--primary); }
+.empty-cell { text-align: center; padding: 24px; color: var(--gray); }
+
+.quick-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
+.quick-action-card {
+  display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: var(--radius);
+  text-decoration: none; color: white; transition: all 0.3s; position: relative; overflow: hidden;
+}
+.quick-action-card::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s;
+}
+.quick-action-card:hover::before { left: 100%; }
+.quick-action-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.action-service { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.action-parts { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+.action-appointments { background: linear-gradient(135deg, #059669, #047857); }
+.action-invoices { background: linear-gradient(135deg, #d97706, #b45309); }
+.quick-action-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.quick-action-card span { flex: 1; font-size: 14px; font-weight: 600; }
+.quick-arrow { opacity: 0; transition: all 0.3s; }
+.quick-action-card:hover .quick-arrow { opacity: 1; transform: translateX(4px); }
+
+.qr-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--white); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); border: 1px solid var(--gray-border); margin-bottom: 24px;
+}
+.qr-icon { width: 60px; height: 60px; border-radius: var(--radius); background: var(--gray-light); display: flex; align-items: center; justify-content: center; color: var(--gray); font-size: 28px; border: 2px dashed var(--gray-border); }
+.qr-info { flex: 1; }
+.qr-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.qr-desc { font-size: 13px; color: var(--gray); }
+
+@media(max-width: 768px) {
+  .welcome-section { flex-direction: column; align-items: flex-start; }
+  .order-timeline { flex-wrap: wrap; gap: 8px; }
+  .timeline-line { display: none; }
+  .quick-actions-grid { grid-template-columns: 1fr; }
+  .popular-grid { grid-template-columns: repeat(2, 1fr); }
+  .cars-grid { grid-template-columns: 1fr; }
+}
+</style>

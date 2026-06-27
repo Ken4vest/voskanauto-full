@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const multer = require('multer');
+const nodeCron = require('node-cron');
+const qrcode = require('qrcode');
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 require('dotenv').config();
 
 const { db, initDatabase, dbHelpers } = require('./src/database');
@@ -18,7 +22,32 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 
-// Security middleware
+// ============================================================
+// НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ (Фото до/после)
+// ============================================================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'public', 'uploads', 'order-photos');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
+// ============================================================
+// SECURITY MIDDLEWARE
+// ============================================================
 app.use(require('helmet')({
   contentSecurityPolicy: {
     directives: {
@@ -27,12 +56,15 @@ app.use(require('helmet')({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'"],
       scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
     }
   }
 }));
 
-app.use(require('cors')({ origin: process.env.NODE_ENV === 'production' ? false : true, credentials: true }));
+app.use(require('cors')({ 
+  origin: process.env.NODE_ENV === 'production' ? false : true, 
+  credentials: true 
+}));
 
 const limiter = require('express-rate-limit')({
   windowMs: 15 * 60 * 1000,
@@ -41,12 +73,13 @@ const limiter = require('express-rate-limit')({
 });
 app.use('/api/', limiter);
 
-// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session
+// ============================================================
+// SESSION
+// ============================================================
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default-secret-change-me',
   resave: false,
@@ -60,11 +93,12 @@ app.use(session({
   name: 'voskanauto.sid'
 }));
 
-// View engine
+// ============================================================
+// VIEW ENGINE
+// ============================================================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Layout setup — express-ejs-layouts
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 app.set('layout', 'admin/admin_layout');
@@ -73,7 +107,22 @@ app.set('layout extractStyles', false);
 
 app.use(setUserLocals);
 
-// ======== HELPER: Приведение данных автомобилей к примитивам ========
+// ============================================================
+// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ТЕМЫ
+// ============================================================
+app.use(async (req, res, next) => {
+  if (req.session.user) {
+    const themeData = await dbHelpers.getUserTheme(req.session.user.id);
+    res.locals.userTheme = themeData?.theme || 'light';
+  } else {
+    res.locals.userTheme = 'light';
+  }
+  next();
+});
+
+// ============================================================
+// HELPER: Нормализация данных автомобилей
+// ============================================================
 function extractString(val) {
   if (val === null || val === undefined) return '';
   if (typeof val === 'string') return val;
@@ -116,23 +165,26 @@ function extractNumber(val) {
 
 function normalizeCars(rawCars) {
   if (!Array.isArray(rawCars)) return [];
-  return rawCars.map(function(car) {
-    return {
-      id: car.id,
-      client_id: car.client_id,
-      brand: extractString(car.brand),
-      model: extractString(car.model),
-      year: extractString(car.year) || null,
-      vin: extractString(car.vin) || null,
-      license_plate: extractString(car.license_plate) || null,
-      mileage: extractNumber(car.mileage),
-      color: extractString(car.color) || null,
-      created_at: car.created_at
-    };
-  });
+  return rawCars.map(car => ({
+    id: car.id,
+    client_id: car.client_id,
+    brand: extractString(car.brand),
+    model: extractString(car.model),
+    year: extractString(car.year) || null,
+    vin: extractString(car.vin) || null,
+    license_plate: extractString(car.license_plate) || null,
+    mileage: extractNumber(car.mileage),
+    color: extractString(car.color) || null,
+    created_at: car.created_at
+  }));
 }
 
-// ======== PUBLIC ROUTES (без layout) ========
+// ============================================================
+// ============================================================
+// PUBLIC ROUTES
+// ============================================================
+// ============================================================
+
 app.get('/', (req, res) => {
   if (req.session.user) {
     if (req.session.user.role === 'client') return res.redirect('/client/dashboard');
@@ -178,8 +230,8 @@ app.post('/register', registerValidator, async (req, res) => {
 
   const hash = bcrypt.hashSync(password, 10);
   const result = await dbHelpers.run(
-    'INSERT INTO users (email, password, role, full_name, phone, company_name, inn, kpp, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [email, hash, 'client', full_name, phone || null, company_name || null, inn || null, kpp || null, 0]
+    'INSERT INTO users (email, password, role, full_name, phone, company_name, inn, kpp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [email, hash, 'client', full_name, phone || null, company_name || null, inn || null, kpp || null]
   );
 
   req.session.user = { id: result.lastID, email, role: 'client', full_name };
@@ -187,7 +239,12 @@ app.post('/register', registerValidator, async (req, res) => {
   res.redirect('/client/dashboard');
 });
 
-// ======== CLIENT ROUTES (с client_layout) ========
+// ============================================================
+// ============================================================
+// CLIENT ROUTES
+// ============================================================
+// ============================================================
+
 app.get('/client/dashboard', requireAuth, requireRole(['client']), async (req, res) => {
   try {
     const user = await dbHelpers.getUserById(req.session.user.id);
@@ -200,7 +257,23 @@ app.get('/client/dashboard', requireAuth, requireRole(['client']), async (req, r
     const appointments = await dbHelpers.getAppointments(req.session.user.id);
     const invoices = await dbHelpers.getInvoices(req.session.user.id);
     const notifications = await dbHelpers.getNotifications(req.session.user.id);
-    res.render('client/dashboard', { layout: 'partials/client_layout', user, cars, orders, appointments, invoices, notifications, activePage: 'dashboard', title: 'Личный кабинет', breadcrumbs: 'Главная / Дашборд' });
+
+    const reviews = await dbHelpers.getAllReviews();
+    const clientReviews = reviews.filter(r => {
+      const order = orders.find(o => o.id === r.order_id);
+      return order && order.client_id === req.session.user.id;
+    });
+
+    const unreadData = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadData ? unreadData.count : 0;
+    res.render('client/dashboard', { 
+      layout: 'partials/client_layout', 
+      user, cars, orders, appointments, invoices, notifications, 
+      clientReviews, unreadCount,
+      activePage: 'dashboard', 
+      title: 'Личный кабинет', 
+      breadcrumbs: 'Главная / Дашборд' 
+    });
   } catch (err) {
     console.error('Client dashboard error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки дашборда' });
@@ -211,7 +284,9 @@ app.get('/client/cars', requireAuth, requireRole(['client']), async (req, res) =
   try {
     const rawCars = await dbHelpers.getClientCars(req.session.user.id);
     const cars = normalizeCars(rawCars);
-    res.render('client/cars', { layout: 'partials/client_layout', cars, activePage: 'cars', title: 'Мои автомобили', breadcrumbs: 'Главная / Автомобили' });
+    const unreadDataCar = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataCar ? unreadDataCar.count : 0;
+    res.render('client/cars', { layout: 'partials/client_layout', cars, unreadCount, activePage: 'cars', title: 'Мои автомобили', breadcrumbs: 'Главная / Автомобили' });
   } catch (err) {
     console.error('Client cars error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки автомобилей' });
@@ -229,12 +304,31 @@ app.post('/client/cars', requireAuth, requireRole(['client']), carValidator, asy
   }
 });
 
+// ============================================================
+// УСЛУГИ + КАЛЬКУЛЯТОР + СРАВНЕНИЕ
+// ============================================================
 app.get('/client/services', requireAuth, requireRole(['client']), async (req, res) => {
   try {
     const services = await dbHelpers.getAllServices();
     const cartItems = await dbHelpers.getCartItems(req.session.user.id);
     const cartTotal = await dbHelpers.getCartTotal(req.session.user.id);
-    res.render('client/services', { layout: 'partials/client_layout', services, cartItems, cartTotal, activePage: 'services', title: 'Услуги', breadcrumbs: 'Главная / Услуги' });
+
+    const categories = [...new Set(services.map(s => s.category))];
+    const servicesByCategory = {};
+    categories.forEach(cat => {
+      servicesByCategory[cat] = services.filter(s => s.category === cat);
+    });
+
+    const unreadDataSv = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataSv ? unreadDataSv.count : 0;
+    res.render('client/services', { 
+      layout: 'partials/client_layout', 
+      services, servicesByCategory, categories,
+      cartItems, cartTotal, unreadCount,
+      activePage: 'services', 
+      title: 'Услуги', 
+      breadcrumbs: 'Главная / Услуги' 
+    });
   } catch (err) {
     console.error('Client services error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки услуг' });
@@ -279,7 +373,9 @@ app.get('/client/cart', requireAuth, requireRole(['client']), async (req, res) =
   try {
     const cartItems = await dbHelpers.getCartItems(req.session.user.id);
     const cartTotal = await dbHelpers.getCartTotal(req.session.user.id);
-    res.render('client/cart', { layout: 'partials/client_layout', cartItems, cartTotal, activePage: 'cart', title: 'Корзина', breadcrumbs: 'Главная / Корзина' });
+    const unreadDataCart = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataCart ? unreadDataCart.count : 0;
+    res.render('client/cart', { layout: 'partials/client_layout', cartItems, cartTotal, unreadCount, activePage: 'cart', title: 'Корзина', breadcrumbs: 'Главная / Корзина' });
   } catch (err) {
     console.error('Cart error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки корзины' });
@@ -332,6 +428,8 @@ app.post('/client/checkout', requireAuth, requireRole(['client']), async (req, r
         [req.session.user.id, car_id || null, cartItems[0]?.service_id || null, appointment_date, appointment_time, 'pending', notes || null]
       );
     }
+
+    await dbHelpers.addOrderHistory(orderId, req.session.user.id, 'create', null, 'Клиент создал заказ через корзину');
     await dbHelpers.addNotification(req.session.user.id, 'order', 'Новый заказ-наряд', `Ваш заказ ${orderNumber} создан и ожидает подтверждения`);
     res.redirect('/client/orders');
   } catch (err) {
@@ -340,13 +438,18 @@ app.post('/client/checkout', requireAuth, requireRole(['client']), async (req, r
   }
 });
 
+// ============================================================
+// ЗАКАЗЫ КЛИЕНТА + ОТЗЫВЫ + ИСТОРИЯ + ГАРАНТИЙНЫЙ ТАЛОН
+// ============================================================
 app.get('/client/orders', requireAuth, requireRole(['client']), async (req, res) => {
   try {
     const orders = await dbHelpers.all(
       'SELECT wo.*, c.brand, c.model, c.license_plate FROM work_orders wo LEFT JOIN cars c ON wo.car_id = c.id WHERE wo.client_id = ? ORDER BY wo.created_at DESC',
       [req.session.user.id]
     );
-    res.render('client/orders', { layout: 'partials/client_layout', orders, activePage: 'orders', title: 'Мои заказы', breadcrumbs: 'Главная / Заказы' });
+    const unreadDataOrd = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataOrd ? unreadDataOrd.count : 0;
+    res.render('client/orders', { layout: 'partials/client_layout', orders, unreadCount, activePage: 'orders', title: 'Мои заказы', breadcrumbs: 'Главная / Заказы' });
   } catch (err) {
     console.error('Client orders error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки заказов' });
@@ -357,10 +460,132 @@ app.get('/client/orders/:id', requireAuth, requireRole(['client']), async (req, 
   try {
     const order = await dbHelpers.getWorkOrderById(req.params.id);
     if (!order || order.client_id !== req.session.user.id) return res.status(404).render('error', { layout: false, message: 'Заказ не найден' });
-    res.render('client/order_detail', { layout: 'partials/client_layout', order, activePage: 'orders', title: 'Заказ #' + order.order_number, breadcrumbs: 'Главная / Заказы / Детали' });
+
+    const reviews = await dbHelpers.getOrderReviews(req.params.id);
+    const review = reviews && reviews.length > 0 ? reviews[0] : null;
+    const orderHistory = await dbHelpers.getOrderHistory(req.params.id);
+    const photos = await dbHelpers.getOrderPhotos(req.params.id);
+
+    let qrCodeUrl = null;
+    if (order.status === 'completed') {
+      qrCodeUrl = await qrcode.toDataURL(`${req.protocol}://${req.get('host')}/client/orders/${order.id}`);
+    }
+
+    const unreadDataDet = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataDet ? unreadDataDet.count : 0;
+    res.render('client/order_detail', { 
+      layout: 'partials/client_layout', 
+      order, review, orderHistory, photos, qrCodeUrl, unreadCount,
+      activePage: 'orders', 
+      title: 'Заказ #' + order.order_number, 
+      breadcrumbs: 'Главная / Заказы / Детали' 
+    });
   } catch (err) {
     console.error('Order detail error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки заказа' });
+  }
+});
+
+// ОТЗЫВ К ЗАКАЗУ
+app.post('/client/orders/:id/review', requireAuth, requireRole(['client']), async (req, res) => {
+  try {
+    const { rating, text } = req.body;
+    const order = await dbHelpers.getWorkOrderById(req.params.id);
+    if (!order || order.client_id !== req.session.user.id) {
+      return res.status(404).render('error', { layout: false, message: 'Заказ не найден' });
+    }
+    if (order.status !== 'completed') {
+      return res.status(400).render('error', { layout: false, message: 'Отзыв можно оставить только после выполнения заказа' });
+    }
+
+    const existing = await dbHelpers.getOrderReviews(req.params.id);
+    if (existing && existing.length > 0) {
+      return res.status(400).render('error', { layout: false, message: 'Отзыв уже оставлен' });
+    }
+
+    await dbHelpers.addReview(req.params.id, req.session.user.id, parseInt(rating), text || null);
+    await dbHelpers.addNotification(req.session.user.id, 'review', 'Спасибо за отзыв!', 'Ваш отзыв помогает нам становиться лучше');
+    res.redirect('/client/orders/' + req.params.id);
+  } catch (err) {
+    console.error('Review error:', err);
+    res.status(500).render('error', { layout: false, message: 'Ошибка сохранения отзыва' });
+  }
+});
+
+// ГАРАНТИЙНЫЙ ТАЛОН (PDF)
+app.get('/client/orders/:id/warranty', requireAuth, requireRole(['client']), async (req, res) => {
+  try {
+    const order = await dbHelpers.getWorkOrderById(req.params.id);
+    if (!order || order.client_id !== req.session.user.id) {
+      return res.status(404).send('Заказ не найден');
+    }
+    if (order.status !== 'completed') {
+      return res.status(400).send('Гарантийный талон доступен только для выполненных заказов');
+    }
+
+    const user = await dbHelpers.getUserById(req.session.user.id);
+    const car = await dbHelpers.get('SELECT * FROM cars WHERE id = ?', [order.car_id]);
+    const services = await dbHelpers.all(
+      'SELECT s.name, wos.price FROM work_order_services wos JOIN services s ON wos.service_id = s.id WHERE wos.order_id = ?',
+      [req.params.id]
+    );
+
+    const qrDataUrl = await qrcode.toDataURL(`${req.protocol}://${req.get('host')}/client/orders/${order.id}`);
+    const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, '');
+
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]);
+    const { width, height } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    page.drawText('ВОСКАН АВТО', { x: 50, y: height - 50, size: 24, font: boldFont, color: rgb(0.1, 0.3, 0.6) });
+    page.drawText('ГАРАНТИЙНЫЙ ТАЛОН', { x: 50, y: height - 80, size: 18, font: boldFont, color: rgb(0.2, 0.2, 0.2) });
+
+    const lines = [
+      `Номер заказа: ${order.order_number}`,
+      `Дата выполнения: ${new Date(order.updated_at || order.created_at).toLocaleDateString('ru-RU')}`,
+      ``,
+      `Клиент: ${user.full_name}`,
+      `Телефон: ${user.phone || '—'}`,
+      ``,
+      `Автомобиль: ${car ? `${car.brand} ${car.model} (${car.license_plate})` : '—'}`,
+      ``,
+      `Выполненные работы:`
+    ];
+
+    let y = height - 120;
+    lines.forEach(line => {
+      page.drawText(line, { x: 50, y, size: 12, font });
+      y -= 20;
+    });
+
+    services.forEach(s => {
+      page.drawText(`• ${s.name} — ${s.price.toLocaleString('ru-RU')} ₽`, { x: 70, y, size: 11, font });
+      y -= 18;
+    });
+
+    y -= 20;
+    page.drawText(`ИТОГО: ${order.total_amount.toLocaleString('ru-RU')} ₽`, { x: 50, y, size: 14, font: boldFont, color: rgb(0.1, 0.3, 0.6) });
+
+    y -= 40;
+    page.drawText('Гарантия на выполненные работы: 6 месяцев', { x: 50, y, size: 12, font: boldFont, color: rgb(0.2, 0.6, 0.2) });
+    y -= 20;
+    page.drawText('Гарантия на запчасти: согласно условиям поставщика', { x: 50, y, size: 11, font });
+
+    const qrImage = await pdfDoc.embedPng(Buffer.from(qrBase64, 'base64'));
+    page.drawImage(qrImage, { x: width - 150, y: 50, width: 100, height: 100 });
+    page.drawText('Отсканируйте для проверки', { x: width - 170, y: 40, size: 8, font });
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="warranty-${order.order_number}.pdf"`);
+    res.send(Buffer.from(pdfBytes));
+
+  } catch (err) {
+    console.error('Warranty PDF error:', err);
+    res.status(500).send('Ошибка генерации PDF');
   }
 });
 
@@ -370,7 +595,9 @@ app.get('/client/appointments', requireAuth, requireRole(['client']), async (req
     const rawCars = await dbHelpers.getClientCars(req.session.user.id);
     const cars = normalizeCars(rawCars);
     const services = await dbHelpers.getAllServices();
-    res.render('client/appointments', { layout: 'partials/client_layout', appointments, cars, services, activePage: 'appointments', title: 'Записи', breadcrumbs: 'Главная / Записи' });
+    const unreadDataApp = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataApp ? unreadDataApp.count : 0;
+    res.render('client/appointments', { layout: 'partials/client_layout', appointments, cars, services, unreadCount, activePage: 'appointments', title: 'Записи', breadcrumbs: 'Главная / Записи' });
   } catch (err) {
     console.error('Appointments error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки записей' });
@@ -406,7 +633,9 @@ app.get('/client/wash', requireAuth, requireRole(['client']), async (req, res) =
     const washServices = await dbHelpers.getAllWashServices();
     const rawCars = await dbHelpers.getClientCars(req.session.user.id);
     const cars = normalizeCars(rawCars);
-    res.render('client/wash', { layout: 'partials/client_layout', washServices, cars, activePage: 'wash', title: 'Мойка', breadcrumbs: 'Главная / Мойка' });
+    const unreadDataWash = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataWash ? unreadDataWash.count : 0;
+    res.render('client/wash', { layout: 'partials/client_layout', washServices, cars, unreadCount, activePage: 'wash', title: 'Мойка', breadcrumbs: 'Главная / Мойка' });
   } catch (err) {
     console.error('Wash error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки мойки' });
@@ -416,7 +645,11 @@ app.get('/client/wash', requireAuth, requireRole(['client']), async (req, res) =
 app.get('/client/parts', requireAuth, requireRole(['client']), async (req, res) => {
   try {
     const parts = await dbHelpers.getAllParts();
-    res.render('client/parts', { layout: 'partials/client_layout', parts, activePage: 'parts', title: 'Запчасти', breadcrumbs: 'Главная / Запчасти' });
+    const categories = [...new Set(parts.map(p => p.category).filter(Boolean))];
+    const cartTotal = await dbHelpers.getCartTotal(req.session.user.id);
+    const unreadDataPart = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataPart ? unreadDataPart.count : 0;
+    res.render('client/parts', { layout: 'partials/client_layout', parts, categories, cartTotal, unreadCount, activePage: 'parts', title: 'Запчасти', breadcrumbs: 'Главная / Запчасти' });
   } catch (err) {
     console.error('Parts error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки запчастей' });
@@ -426,7 +659,9 @@ app.get('/client/parts', requireAuth, requireRole(['client']), async (req, res) 
 app.get('/client/invoices', requireAuth, requireRole(['client']), async (req, res) => {
   try {
     const invoices = await dbHelpers.getInvoices(req.session.user.id);
-    res.render('client/invoices', { layout: 'partials/client_layout', invoices, activePage: 'invoices', title: 'Счета', breadcrumbs: 'Главная / Счета' });
+    const unreadDataInv = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataInv ? unreadDataInv.count : 0;
+    res.render('client/invoices', { layout: 'partials/client_layout', invoices, unreadCount, activePage: 'invoices', title: 'Счета', breadcrumbs: 'Главная / Счета' });
   } catch (err) {
     console.error('Invoices error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки счетов' });
@@ -452,7 +687,39 @@ app.get('/client/profile', requireAuth, requireRole(['client']), async (req, res
     const user = await dbHelpers.getUserById(req.session.user.id);
     const rawCars = await dbHelpers.getClientCars(req.session.user.id);
     const cars = normalizeCars(rawCars);
-    res.render('client/profile', { layout: 'partials/client_layout', user, cars, activePage: 'profile', title: 'Профиль', breadcrumbs: 'Главная / Профиль' });
+
+    const orders = await dbHelpers.all(
+      'SELECT COUNT(*) as count FROM work_orders WHERE client_id = ?',
+      [req.session.user.id]
+    );
+    const ordersCount = orders[0].count;
+
+    const reviews = await dbHelpers.all(
+      'SELECT COUNT(*) as count FROM reviews r JOIN work_orders wo ON r.order_id = wo.id WHERE wo.client_id = ?',
+      [req.session.user.id]
+    );
+    const reviewsCount = reviews[0].count;
+
+    const appointments = await dbHelpers.all(
+      'SELECT COUNT(*) as count FROM appointments WHERE client_id = ?',
+      [req.session.user.id]
+    );
+    const appointmentsCount = appointments[0].count;
+
+    const totalSpentData = await dbHelpers.get(
+      'SELECT COALESCE(SUM(total_amount), 0) as total FROM work_orders WHERE client_id = ? AND status = "completed"',
+      [req.session.user.id]
+    );
+    const totalSpent = totalSpentData ? totalSpentData.total : 0;
+
+    const unreadData = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadData ? unreadData.count : 0;
+
+    res.render('client/profile', { 
+      layout: 'partials/client_layout', 
+      user, cars, ordersCount, reviewsCount, appointmentsCount, totalSpent, unreadCount,
+      activePage: 'profile', title: 'Профиль', breadcrumbs: 'Главная / Профиль' 
+    });
   } catch (err) {
     console.error('Profile error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки профиля' });
@@ -478,14 +745,46 @@ app.get('/client/notifications', requireAuth, requireRole(['client']), async (re
   try {
     const notifications = await dbHelpers.getNotifications(req.session.user.id);
     await dbHelpers.markRead(req.session.user.id);
-    res.render('client/notifications', { layout: 'partials/client_layout', notifications, activePage: 'notifications', title: 'Уведомления', breadcrumbs: 'Главная / Уведомления' });
+    const unreadDataNotif = await dbHelpers.getUnreadCount(req.session.user.id);
+    const unreadCount = unreadDataNotif ? unreadDataNotif.count : 0;
+    res.render('client/notifications', { layout: 'partials/client_layout', notifications, unreadCount, activePage: 'notifications', title: 'Уведомления', breadcrumbs: 'Главная / Уведомления' });
   } catch (err) {
     console.error('Notifications error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки уведомлений' });
   }
 });
 
-// ======== ADMIN ROUTES (с admin_layout по умолчанию) ========
+// ============================================================
+// API: Тема + Сравнение услуг
+// ============================================================
+app.post('/api/theme', requireAuth, async (req, res) => {
+  try {
+    const { theme } = req.body;
+    await dbHelpers.setUserTheme(req.session.user.id, theme);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка' });
+  }
+});
+
+app.get('/api/services/compare', requireAuth, async (req, res) => {
+  try {
+    const ids = req.query.ids.split(',').map(Number);
+    const placeholders = ids.map(() => '?').join(',');
+    const services = await dbHelpers.all(`SELECT * FROM services WHERE id IN (${placeholders})`, ids);
+    res.json(services);
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка' });
+  }
+});
+
+
+// ============================================================
+// ============================================================
+// ADMIN ROUTES
+// ============================================================
+// ============================================================
+
 app.get('/admin/dashboard', requireStaff, async (req, res) => {
   try {
     const stats = await dbHelpers.getStats();
@@ -495,14 +794,25 @@ app.get('/admin/dashboard', requireStaff, async (req, res) => {
     );
     const criticalParts = await dbHelpers.getCriticalParts();
     const unreadNotifications = await dbHelpers.getUnreadCount(req.session.user.id);
-    res.render('admin/dashboard', { stats, recentOrders, criticalParts, unreadNotifications, activePage: 'dashboard', title: 'Дашборд', breadcrumbs: 'Главная / Дашборд' });
+
+    const allReviews = await dbHelpers.getAllReviews();
+    const avgRating = allReviews.length > 0 
+      ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
+      : 0;
+
+    res.render('admin/dashboard', { 
+      stats, recentOrders, criticalParts, unreadNotifications, avgRating,
+      activePage: 'dashboard', title: 'Дашборд', breadcrumbs: 'Главная / Дашборд' 
+    });
   } catch (err) {
     console.error('Admin dashboard error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки дашборда' });
   }
 });
 
-// Admin clients
+// ============================================================
+// КЛИЕНТЫ
+// ============================================================
 app.get('/admin/clients', requireStaff, async (req, res) => {
   try {
     const clients = await dbHelpers.all('SELECT * FROM users WHERE role = "client" ORDER BY full_name', []);
@@ -544,7 +854,9 @@ app.post('/admin/clients/:id/invoices', requireStaff, invoiceValidator, async (r
   }
 });
 
-// Admin orders
+// ============================================================
+// ЗАКАЗ-НАРЯДЫ (с таймлайном, комментариями, фото, печатью)
+// ============================================================
 app.get('/admin/orders', requireStaff, async (req, res) => {
   try {
     const status = req.query.status || 'all';
@@ -598,6 +910,8 @@ app.post('/admin/orders', requireStaff, orderValidator, async (req, res) => {
     );
 
     const orderId = result.lastID;
+    await dbHelpers.addOrderHistory(orderId, req.session.user.id, 'create', null, 'Создан заказ ' + orderNumber);
+
     if (services) {
       const ids = Array.isArray(services) ? services : [services];
       for (const sid of ids) {
@@ -632,7 +946,20 @@ app.get('/admin/orders/:id', requireStaff, async (req, res) => {
     const order = await dbHelpers.getWorkOrderById(req.params.id);
     if (!order) return res.status(404).render('error', { layout: false, message: 'Заказ не найден' });
     const mechanics = await dbHelpers.all('SELECT id, full_name FROM users WHERE role = "mechanic" ORDER BY full_name', []);
-    res.render('admin/order_detail', { order, mechanics, activePage: 'orders', title: 'Заказ-наряд #' + order.order_number, breadcrumbs: 'Операции / Заказ-наряды / Детали' });
+
+    const orderHistory = await dbHelpers.getOrderHistory(req.params.id);
+    const comments = await dbHelpers.getOrderComments(req.params.id);
+    const photos = await dbHelpers.getOrderPhotos(req.params.id);
+    const reviews = await dbHelpers.getOrderReviews(req.params.id);
+    const review = reviews && reviews.length > 0 ? reviews[0] : null;
+    const reminders = await dbHelpers.getPendingReminders(req.session.user.id);
+
+    res.render('admin/order_detail', { 
+      order, mechanics, orderHistory, comments, photos, review, reminders,
+      activePage: 'orders', 
+      title: 'Заказ-наряд #' + order.order_number, 
+      breadcrumbs: 'Операции / Заказ-наряды / Детали' 
+    });
   } catch (err) {
     console.error('Order detail error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка загрузки заказа' });
@@ -642,7 +969,11 @@ app.get('/admin/orders/:id', requireStaff, async (req, res) => {
 app.post('/admin/orders/:id/status', requireStaff, async (req, res) => {
   try {
     const { status } = req.body;
+    const oldOrder = await dbHelpers.getWorkOrderById(req.params.id);
     await dbHelpers.run('UPDATE work_orders SET status = ? WHERE id = ?', [status, req.params.id]);
+
+    await dbHelpers.addOrderHistory(req.params.id, req.session.user.id, 'status_change', oldOrder.status, status);
+
     const order = await dbHelpers.getWorkOrderById(req.params.id);
     if (order) {
       await dbHelpers.addNotification(order.client_id, 'order', 'Статус изменён', `Заказ ${order.order_number}: ${status}`);
@@ -667,7 +998,149 @@ app.post('/admin/orders/:id/send', requireStaff, async (req, res) => {
   }
 });
 
-// ======== SERVICE CRUD (Admin) ========
+// ============================================================
+// КОММЕНТАРИИ К ЗАКАЗУ
+// ============================================================
+app.post('/admin/orders/:id/comments', requireStaff, async (req, res) => {
+  try {
+    const { text, is_internal } = req.body;
+    await dbHelpers.addOrderComment(req.params.id, req.session.user.id, text, is_internal ? 1 : 0);
+    res.redirect('/admin/orders/' + req.params.id);
+  } catch (err) {
+    console.error('Comment error:', err);
+    res.status(500).render('error', { layout: false, message: 'Ошибка добавления комментария' });
+  }
+});
+
+// ============================================================
+// ФОТО ДО/ПОСЛЕ
+// ============================================================
+app.post('/admin/orders/:id/photos', requireStaff, upload.single('photo'), async (req, res) => {
+  try {
+    const { type } = req.body;
+    if (!req.file) return res.status(400).json({ error: 'Файл не загружен' });
+
+    await dbHelpers.addOrderPhoto(req.params.id, type, req.file.filename, req.file.originalname, req.session.user.id);
+    res.redirect('/admin/orders/' + req.params.id);
+  } catch (err) {
+    console.error('Photo upload error:', err);
+    res.status(500).render('error', { layout: false, message: 'Ошибка загрузки фото' });
+  }
+});
+
+// ============================================================
+// НАПОМИНАНИЯ
+// ============================================================
+app.post('/admin/orders/:id/reminders', requireStaff, async (req, res) => {
+  try {
+    const { text, remind_at } = req.body;
+    await dbHelpers.addReminder(req.params.id, req.session.user.id, text, remind_at);
+    res.redirect('/admin/orders/' + req.params.id);
+  } catch (err) {
+    console.error('Reminder error:', err);
+    res.status(500).render('error', { layout: false, message: 'Ошибка создания напоминания' });
+  }
+});
+
+app.post('/admin/reminders/:id/complete', requireStaff, async (req, res) => {
+  try {
+    await dbHelpers.completeReminder(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка' });
+  }
+});
+
+// ============================================================
+// ПЕЧАТЬ ЗАКАЗ-НАРЯДА (PDF)
+// ============================================================
+app.get('/admin/orders/:id/print', requireStaff, async (req, res) => {
+  try {
+    const order = await dbHelpers.getWorkOrderById(req.params.id);
+    if (!order) return res.status(404).send('Заказ не найден');
+
+    const client = await dbHelpers.getUserById(order.client_id);
+    const car = await dbHelpers.get('SELECT * FROM cars WHERE id = ?', [order.car_id]);
+    const services = await dbHelpers.all(
+      'SELECT s.name, wos.price FROM work_order_services wos JOIN services s ON wos.service_id = s.id WHERE wos.order_id = ?',
+      [req.params.id]
+    );
+    const parts = await dbHelpers.all(
+      'SELECT p.name, wop.price FROM work_order_parts wop JOIN parts p ON wop.part_id = p.id WHERE wop.order_id = ?',
+      [req.params.id]
+    );
+    const mechanic = order.mechanic_id ? await dbHelpers.getUserById(order.mechanic_id) : null;
+
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]);
+    const { width, height } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    page.drawText('ВОСКАН АВТО', { x: 50, y: height - 50, size: 22, font: boldFont, color: rgb(0.1, 0.3, 0.6) });
+    page.drawText('ЗАКАЗ-НАРЯД', { x: 50, y: height - 80, size: 18, font: boldFont, color: rgb(0.2, 0.2, 0.2) });
+    page.drawText(`№ ${order.order_number}`, { x: 50, y: height - 105, size: 14, font });
+    page.drawText(`Дата: ${new Date(order.created_at).toLocaleDateString('ru-RU')}`, { x: 50, y: height - 125, size: 12, font });
+
+    let y = height - 170;
+    page.drawText('КЛИЕНТ:', { x: 50, y, size: 12, font: boldFont });
+    y -= 20;
+    page.drawText(`ФИО: ${client?.full_name || '—'}`, { x: 50, y, size: 11, font });
+    y -= 18;
+    page.drawText(`Телефон: ${client?.phone || '—'}`, { x: 50, y, size: 11, font });
+
+    y -= 30;
+    page.drawText('АВТОМОБИЛЬ:', { x: 50, y, size: 12, font: boldFont });
+    y -= 20;
+    page.drawText(`${car?.brand || ''} ${car?.model || ''} (${car?.license_plate || '—'})`, { x: 50, y, size: 11, font });
+    y -= 18;
+    page.drawText(`VIN: ${car?.vin || '—'}`, { x: 50, y, size: 11, font });
+
+    y -= 30;
+    page.drawText('ВЫПОЛНЕННЫЕ РАБОТЫ:', { x: 50, y, size: 12, font: boldFont });
+    y -= 20;
+    services.forEach(s => {
+      page.drawText(`• ${s.name} — ${s.price.toLocaleString('ru-RU')} ₽`, { x: 70, y, size: 11, font });
+      y -= 18;
+    });
+
+    if (parts.length > 0) {
+      y -= 10;
+      page.drawText('ИСПОЛЬЗОВАННЫЕ ЗАПЧАСТИ:', { x: 50, y, size: 12, font: boldFont });
+      y -= 20;
+      parts.forEach(p => {
+        page.drawText(`• ${p.name} — ${p.price.toLocaleString('ru-RU')} ₽`, { x: 70, y, size: 11, font });
+        y -= 18;
+      });
+    }
+
+    y -= 30;
+    page.drawText(`РАБОТЫ: ${order.total_labor_cost?.toLocaleString('ru-RU') || 0} ₽`, { x: 50, y, size: 12, font: boldFont });
+    y -= 20;
+    page.drawText(`ЗАПЧАСТИ: ${order.total_parts_cost?.toLocaleString('ru-RU') || 0} ₽`, { x: 50, y, size: 12, font: boldFont });
+    y -= 20;
+    page.drawText(`ИТОГО: ${order.total_amount?.toLocaleString('ru-RU') || 0} ₽`, { x: 50, y, size: 16, font: boldFont, color: rgb(0.1, 0.3, 0.6) });
+
+    y -= 60;
+    page.drawText('Механик: _________________', { x: 50, y, size: 11, font });
+    if (mechanic) page.drawText(mechanic.full_name, { x: 130, y, size: 11, font: boldFont });
+    y -= 30;
+    page.drawText('Клиент: _________________', { x: 50, y, size: 11, font });
+
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="order-${order.order_number}.pdf"`);
+    res.send(Buffer.from(pdfBytes));
+
+  } catch (err) {
+    console.error('Print PDF error:', err);
+    res.status(500).send('Ошибка генерации PDF');
+  }
+});
+
+// ============================================================
+// УСЛУГИ (CRUD)
+// ============================================================
 app.get('/admin/services', requireAdmin, async (req, res) => {
   try {
     const services = await dbHelpers.getAllServices();
@@ -725,7 +1198,9 @@ app.post('/admin/services/:id/restore', requireAdmin, async (req, res) => {
   }
 });
 
-// Admin appointments
+// ============================================================
+// ЗАПИСИ
+// ============================================================
 app.get('/admin/appointments', requireStaff, async (req, res) => {
   try {
     const appointments = await dbHelpers.getAppointments();
@@ -760,7 +1235,9 @@ app.post('/admin/appointments/:id/reject', requireStaff, async (req, res) => {
   }
 });
 
-// Admin warehouse
+// ============================================================
+// СКЛАД
+// ============================================================
 app.get('/admin/warehouse', requireStaff, async (req, res) => {
   try {
     const parts = await dbHelpers.getAllParts();
@@ -773,17 +1250,66 @@ app.get('/admin/warehouse', requireStaff, async (req, res) => {
   }
 });
 
-app.post('/admin/warehouse/parts', requireAdmin, async (req, res) => {
+// Multer для загрузки фото запчастей
+const partStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'public', 'uploads', 'parts');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = 'part-' + Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const partUpload = multer({ 
+  storage: partStorage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
+app.post('/admin/warehouse/parts', requireAdmin, partUpload.single('part_image'), async (req, res) => {
   try {
     const { article, name, manufacturer, category, stock_main, min_stock, purchase_price, sale_price } = req.body;
+    const imageUrl = req.file ? '/uploads/parts/' + req.file.filename : null;
+    
     await dbHelpers.run(
-      'INSERT INTO parts (article, name, manufacturer, category, stock_main, min_stock, purchase_price, sale_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [article, name, manufacturer, category, stock_main || 0, min_stock || 5, purchase_price || 0, sale_price || 0]
+      'INSERT INTO parts (article, name, manufacturer, category, stock_main, min_stock, purchase_price, sale_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [article, name, manufacturer || null, category || null, stock_main || 0, min_stock || 5, purchase_price || 0, sale_price || 0, imageUrl]
     );
     res.redirect('/admin/warehouse');
   } catch (err) {
     console.error('Part add error:', err);
     res.status(500).render('error', { layout: false, message: 'Ошибка добавления запчасти' });
+  }
+});
+
+app.post('/admin/warehouse/parts/:id/edit', requireAdmin, partUpload.single('part_image'), async (req, res) => {
+  try {
+    const { article, name, manufacturer, category, stock_main, min_stock, purchase_price, sale_price } = req.body;
+    
+    const current = await dbHelpers.get('SELECT image_url FROM parts WHERE id = ?', [req.params.id]);
+    let imageUrl = current?.image_url;
+    
+    if (req.file) {
+      if (current?.image_url) {
+        const oldPath = path.join(__dirname, 'public', current.image_url);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      imageUrl = '/uploads/parts/' + req.file.filename;
+    }
+    
+    await dbHelpers.run(
+      'UPDATE parts SET article = ?, name = ?, manufacturer = ?, category = ?, stock_main = ?, min_stock = ?, purchase_price = ?, sale_price = ?, image_url = ? WHERE id = ?',
+      [article, name, manufacturer || null, category || null, stock_main || 0, min_stock || 5, purchase_price || 0, sale_price || 0, imageUrl, req.params.id]
+    );
+    res.redirect('/admin/warehouse');
+  } catch (err) {
+    console.error('Part edit error:', err);
+    res.status(500).render('error', { layout: false, message: 'Ошибка редактирования запчасти' });
   }
 });
 
@@ -798,10 +1324,9 @@ app.post('/admin/warehouse/parts/:id/restock', requireStaff, async (req, res) =>
   }
 });
 
-// Admin pricelist (redirect to services)
-app.get('/admin/pricelist', requireStaff, (req, res) => res.redirect('/admin/services'));
-
-// Admin finance
+// ============================================================
+// ФИНАНСЫ
+// ============================================================
 app.get('/admin/finance', requireAdmin, async (req, res) => {
   try {
     const payments = await dbHelpers.all(
@@ -817,7 +1342,9 @@ app.get('/admin/finance', requireAdmin, async (req, res) => {
   }
 });
 
-// Admin reports
+// ============================================================
+// ОТЧЁТЫ
+// ============================================================
 app.get('/admin/reports', requireAdmin, async (req, res) => {
   try {
     const revenueByDay = await dbHelpers.all(
@@ -839,7 +1366,9 @@ app.get('/admin/reports', requireAdmin, async (req, res) => {
   }
 });
 
-// Admin staff
+// ============================================================
+// ПЕРСОНАЛ
+// ============================================================
 app.get('/admin/staff', requireAdmin, async (req, res) => {
   try {
     const staff = await dbHelpers.all('SELECT * FROM users WHERE role IN ("admin", "mechanic", "receptionist") ORDER BY role, full_name', []);
@@ -853,16 +1382,26 @@ app.get('/admin/staff', requireAdmin, async (req, res) => {
 app.post('/admin/staff', requireAdmin, async (req, res) => {
   try {
     const { email, password, full_name, phone, role } = req.body;
+    
+    if (!password || password.trim().length < 6) {
+      return res.status(400).render('error', { layout: false, message: 'Пароль должен быть минимум 6 символов' });
+    }
+    
     const hash = bcrypt.hashSync(password, 10);
-    await dbHelpers.run('INSERT INTO users (email, password, role, full_name, phone) VALUES (?, ?, ?, ?, ?)', [email, hash, role, full_name, phone]);
+    await dbHelpers.run(
+      'INSERT INTO users (email, password, role, full_name, phone, is_active) VALUES (?, ?, ?, ?, ?, ?)', 
+      [email, hash, role, full_name, phone || null, 1]
+    );
     res.redirect('/admin/staff');
   } catch (err) {
     console.error('Staff add error:', err);
-    res.status(500).render('error', { layout: false, message: 'Ошибка добавления сотрудника' });
+    res.status(500).render('error', { layout: false, message: 'Ошибка добавления сотрудника: ' + err.message });
   }
 });
 
-// Admin invoices
+// ============================================================
+// СЧЕТА
+// ============================================================
 app.get('/admin/invoices', requireStaff, async (req, res) => {
   try {
     const invoices = await dbHelpers.getInvoices();
@@ -904,7 +1443,9 @@ app.post('/admin/invoices/:id/pay', requireStaff, async (req, res) => {
   }
 });
 
-// Admin notifications
+// ============================================================
+// УВЕДОМЛЕНИЯ
+// ============================================================
 app.get('/admin/notifications', requireStaff, async (req, res) => {
   try {
     const notifications = await dbHelpers.getNotifications(req.session.user.id);
@@ -916,7 +1457,9 @@ app.get('/admin/notifications', requireStaff, async (req, res) => {
   }
 });
 
+// ============================================================
 // API
+// ============================================================
 app.get('/api/cars/:clientId', requireAuth, async (req, res) => {
   try {
     const rawCars = await dbHelpers.getClientCars(req.params.clientId);
@@ -945,21 +1488,26 @@ app.get('/api/notifications/unread', requireAuth, async (req, res) => {
   }
 });
 
-// ======== ВРЕМЕННО: очистка испорченных данных автомобилей ========
-app.get('/debug/clear-cars', requireAuth, requireRole(['client']), async (req, res) => {
-  try {
-    await dbHelpers.run('DELETE FROM cars WHERE client_id = ?', [req.session.user.id]);
-    res.send('<h1>Автомобили удалены</h1><p>Все автомобили удалены. <a href="/client/cars">Перейти к автомобилям</a></p>');
-  } catch (err) {
-    console.error('Clear cars error:', err);
-    res.status(500).send('Ошибка: ' + err.message);
+// ============================================================
+// CRON: Напоминания и бэкап
+// ============================================================
+nodeCron.schedule('0 9 * * *', async () => {
+  console.log('Проверка напоминаний...');
+  const allUsers = await dbHelpers.all('SELECT id FROM users WHERE role IN ("admin", "receptionist")', []);
+  for (const user of allUsers) {
+    const reminders = await dbHelpers.getPendingReminders(user.id);
+    for (const r of reminders) {
+      await dbHelpers.addNotification(user.id, 'reminder', 'Напоминание', r.text);
+    }
   }
 });
-// ======== КОНЕЦ ВРЕМЕННОГО МАРШРУТА ========
 
-// Error handlers
+// ============================================================
+// ERROR HANDLERS
+// ============================================================
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  dbHelpers.logError(err.message, err.stack, req.url, req.method, req.session.user?.id);
   res.status(500).render('error', { layout: false, message: 'Что-то пошло не так!' });
 });
 
@@ -967,7 +1515,9 @@ app.use((req, res) => {
   res.status(404).render('error', { layout: false, message: 'Страница не найдена' });
 });
 
-// Start server after DB init
+// ============================================================
+// START SERVER
+// ============================================================
 (async () => {
   try {
     await initDatabase();
@@ -976,7 +1526,6 @@ app.use((req, res) => {
       console.log(`ВосканАвто HTTP: http://localhost:${PORT}`);
     });
 
-    // HTTPS (if certificates exist)
     const keyPath = process.env.SSL_KEY_PATH || './ssl/server.key';
     const certPath = process.env.SSL_CERT_PATH || './ssl/server.crt';
 

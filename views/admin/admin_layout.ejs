@@ -6,6 +6,9 @@
 <title><%= typeof title !== 'undefined' ? title : 'ВосканАвто' %></title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- ===== ТЁМНАЯ ТЕМА + УЛУЧШЕННЫЙ UI ===== -->
+<link rel="stylesheet" href="/css/dark-theme.css">
+<script src="/js/app-enhancements.js" defer></script>
 <style>
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--secondary:#f59e0b;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--dark:#1e293b;--gray:#64748b;--gray-light:#f1f5f9;--gray-border:#e2e8f0;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);--radius:12px;--radius-sm:8px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -124,7 +127,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
 @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.menu-toggle{display:flex}.stats-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.filters-row{flex-direction:column}.filter-input{width:100%}}
 </style>
 </head>
-<body>
+<body data-theme="<%= typeof userTheme !== 'undefined' ? userTheme : 'light' %>">
 <div class="app-container">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -211,6 +214,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:
         </div>
       </div>
       <div class="top-bar-right">
+        <!-- ===== КНОПКА ТЕМЫ ===== -->
+        <button id="themeToggle" class="theme-toggle" title="Переключить тему" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gray-border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;">☀️</button>
+        
         <a href="/admin/notifications" class="top-btn" aria-label="Уведомления">
           <i class="fas fa-bell"></i>
           <span class="dot" id="notifDot" style="display:none"></span>
