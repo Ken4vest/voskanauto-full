@@ -1522,24 +1522,28 @@ app.use((req, res) => {
   try {
     await initDatabase();
 
-    app.listen(PORT, () => {
-      console.log(`ВосканАвто HTTP: http://localhost:${PORT}`);
+    const PORT = process.env.PORT || 3000;
+    
+    // ВАЖНО: 0.0.0.0 для Render, иначе "No open ports detected"
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ВосканАвто HTTP: http://0.0.0.0:${PORT}`);
     });
 
-    const keyPath = process.env.SSL_KEY_PATH || './ssl/server.key';
-    const certPath = process.env.SSL_CERT_PATH || './ssl/server.crt';
+    // HTTPS только для локальной разработки
+    if (process.env.NODE_ENV !== 'production') {
+      const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+      const keyPath = process.env.SSL_KEY_PATH || './ssl/server.key';
+      const certPath = process.env.SSL_CERT_PATH || './ssl/server.crt';
 
-    if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
-      const httpsOptions = {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-      };
-      https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {
-        console.log(`ВосканАвто HTTPS: https://localhost:${HTTPS_PORT}`);
-      });
-    } else {
-      console.log('SSL certificates not found. HTTPS disabled.');
-      console.log('To enable HTTPS, place server.key and server.crt in ./ssl/');
+      if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+        const httpsOptions = {
+          key: fs.readFileSync(keyPath),
+          cert: fs.readFileSync(certPath)
+        };
+        https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {
+          console.log(`ВосканАвто HTTPS: https://localhost:${HTTPS_PORT}`);
+        });
+      }
     }
 
     console.log('Admin: admin@voskanauto.ru / admin123');
