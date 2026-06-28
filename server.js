@@ -1520,36 +1520,38 @@ app.use((req, res) => {
 // ============================================================
 (async () => {
   try {
+    // Создаём папку database если её нет (важно для Render)
+    const dbDir = path.join(__dirname, 'database');
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+      console.log('Created database directory');
+    }
+    
+    // Создаём папки для загрузок
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    const orderPhotosDir = path.join(uploadsDir, 'order-photos');
+    const partsDir = path.join(uploadsDir, 'parts');
+    
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    if (!fs.existsSync(orderPhotosDir)) fs.mkdirSync(orderPhotosDir, { recursive: true });
+    if (!fs.existsSync(partsDir)) fs.mkdirSync(partsDir, { recursive: true });
+
+    console.log('Initializing database...');
     await initDatabase();
+    console.log('Database OK');
 
     const PORT = process.env.PORT || 3000;
     
     // ВАЖНО: 0.0.0.0 для Render, иначе "No open ports detected"
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`ВосканАвто HTTP: http://0.0.0.0:${PORT}`);
+      console.log(`✓ Server running on port ${PORT}`);
     });
-
-    // HTTPS только для локальной разработки
-    if (process.env.NODE_ENV !== 'production') {
-      const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
-      const keyPath = process.env.SSL_KEY_PATH || './ssl/server.key';
-      const certPath = process.env.SSL_CERT_PATH || './ssl/server.crt';
-
-      if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
-        const httpsOptions = {
-          key: fs.readFileSync(keyPath),
-          cert: fs.readFileSync(certPath)
-        };
-        https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {
-          console.log(`ВосканАвто HTTPS: https://localhost:${HTTPS_PORT}`);
-        });
-      }
-    }
 
     console.log('Admin: admin@voskanauto.ru / admin123');
     console.log('Mechanic: semenov@voskanauto.ru / mechanic123');
   } catch (err) {
-    console.error('Failed to start server:', err);
+    console.error('✗ FATAL ERROR:', err);
+    console.error(err.stack);
     process.exit(1);
   }
 })();
