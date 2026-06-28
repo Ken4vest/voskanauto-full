@@ -1,7 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, '..', 'database', 'voskanauto.db');
+const DB_PATH = process.env.NODE_ENV === 'production'
+    ? '/tmp/voskanauto.db'
+    : path.join(__dirname, '..', 'database', 'voskanauto.db');
+
 
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.error('Ошибка подключения к БД:', err.message);
